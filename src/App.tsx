@@ -1,46 +1,16 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { csvParse, csv } from "d3";
+
+import { fetchPokemon } from "./api";
+import { PokemonDatum } from "./api";
 
 function App() {
-  const [data, setData] = useState<d3.DSVRowArray | null>(null);
-  const BASE_URL = "/Pokemon.csv";
+  const [data, setData] = useState<PokemonDatum[] | null>(null);
 
+  const columns = Object.keys(data?.[0] ?? {}) as (keyof PokemonDatum)[];
   useEffect(() => {
-    // async function getData() {
-    //   const url = "/Pokemon.csv";
-    //   try {
-    //     const response = await fetch(url);
-    //     if (!response.ok) {
-    //       throw new Error(`Response status: ${response.status}`);
-    //     }
-    //     const text = await response.text();
-    //     const parsed = csvParse(text);
-    //     console.log(parsed);
-    //     setData(parsed);
-    //     // return text;
-    //     // const json = await response.json();
-    //   } catch (error) {
-    //     console.error(error.message);
-    //     return [];
-    //   }
-    // }
-    // getData();
-
-    async function getD3Fetch(filePath: string) {
-      const data = await csv(filePath);
-      // console.log(data);
-
-      setData(data);
-    }
-
-    getD3Fetch(BASE_URL);
+    fetchPokemon().then((data) => setData(data));
     console.log("Test");
-    // const fetchedData = getData();
-    // if (fetchedData) {
-    //   console.log(fetchedData);
-    //   setData(fetchedData);
-    // }
   }, []);
   return (
     <main>
@@ -53,17 +23,16 @@ function App() {
       <table>
         <thead>
           <tr>
-            {data?.columns.map((d, i) => {
+            {columns.map((d, i) => {
               return <th key={i}>{d}</th>;
             })}
           </tr>
         </thead>
         <tbody>
           {data?.map((d, i) => {
-            // console.log(d);
             return (
               <tr key={i}>
-                {data?.columns.map((c, i) => {
+                {columns.map((c, i) => {
                   return <td key={i}>{d[c]}</td>;
                 })}
               </tr>
