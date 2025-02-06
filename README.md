@@ -93,3 +93,22 @@ function App() {
 ```
 
 ## D3.js
+
+## Utils
+
+### Rollups vs CountBy
+
+To extract the unique values in a column we can either use `rollups` by d3 or `countBy` from Lodash and then extract them with `Object.entries()`
+
+```js
+const groupedTypes = rollups(
+  mst.data,
+  (g) => g.length,
+  (d) => d["Type 1"]
+);
+
+const groupedTypes_LD = Object.entries(countBy(mst.data, "Type 1"));
+console.log("Types Rollup", groupedTypes, "Lodash", groupedTypes_LD);
+```
+
+The result is the same, but Lodash method is far more readable.
