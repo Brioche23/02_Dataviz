@@ -1,24 +1,24 @@
-import { isNil } from "lodash";
+import { isNil } from "lodash"
 
-import { Instance, t } from "mobx-state-tree";
-import { fetchPokemon, PokemonDatum } from "../api";
-import { IReactionDisposer } from "mobx";
-import { createContext, useContext } from "react";
+import { Instance, t } from "mobx-state-tree"
+import { fetchPokemon, PokemonDatum } from "../api"
+import { IReactionDisposer } from "mobx"
+import { createContext, useContext } from "react"
 
 const lifeCycle =
   <T>(func: (self: T) => IReactionDisposer | void) =>
   (self: T) => {
-    let disposer: IReactionDisposer | void;
+    let disposer: IReactionDisposer | void
     return {
       afterCreate() {
-        disposer = func(self);
+        disposer = func(self)
       },
       beforeDestroy() {
-        console.log("Destroy");
-        disposer?.();
+        console.log("Destroy")
+        disposer?.()
       },
-    };
-  };
+    }
+  }
 
 export const RootModel = t
   .model("RootModel", {
@@ -28,32 +28,32 @@ export const RootModel = t
   })
   .views((self) => ({
     get columns() {
-      return Object.keys(self.data?.[0] ?? {}) as (keyof PokemonDatum)[];
+      return Object.keys(self.data?.[0] ?? {}) as (keyof PokemonDatum)[]
     },
   }))
   .actions((self) => ({
     setData(newData: PokemonDatum[]) {
-      self.data = newData;
+      self.data = newData
     },
   }))
   .actions(
     lifeCycle((self) => {
       fetchPokemon().then((data) => {
         // console.log(data);
-        self.setData(data);
-      });
+        self.setData(data)
+      })
     })
-  );
+  )
 
 export interface RootInstance extends Instance<typeof RootModel> {}
 
-export const rootState = RootModel.create({});
+export const rootState = RootModel.create({})
 
-export const RootStateContext = createContext<RootInstance | null>(null);
+export const RootStateContext = createContext<RootInstance | null>(null)
 
 export function useMst() {
-  const state = useContext(RootStateContext);
-  if (isNil(state)) throw new Error("NON HAI USATO IL CONTEXT");
+  const state = useContext(RootStateContext)
+  if (isNil(state)) throw new Error("NON HAI USATO IL CONTEXT")
 
-  return state;
+  return state
 }

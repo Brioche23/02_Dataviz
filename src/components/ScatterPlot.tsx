@@ -1,24 +1,23 @@
-import { observer } from "mobx-react-lite";
-import { useMst } from "../state";
-import { scaleLinear, scaleOrdinal, scaleSqrt } from "d3-scale";
-import { extent } from "d3-array";
-import { countBy, orderBy } from "lodash";
-import { makeLayout } from "yogurt-layout";
-import { DebugLayout } from "./DebugLayout";
-import { useControls } from "leva";
-import { TYPES } from "../const";
+import { observer } from "mobx-react-lite"
+import { useMst } from "../state"
+import { scaleLinear, scaleOrdinal, scaleSqrt } from "d3-scale"
+import { extent } from "d3-array"
+import { countBy, orderBy } from "lodash"
+import { makeLayout } from "yogurt-layout"
+import { DebugLayout } from "./DebugLayout"
+import { useControls } from "leva"
+import { TYPES } from "../const"
 
 export const ScatterPlot = observer(() => {
-  const mst = useMst();
+  const mst = useMst()
 
-  const { debug, marginTop, marginRight, marginBottom, marginLeft } =
-    useControls({
-      debug: false,
-      marginTop: { value: 10, min: 0, max: 100, step: 1 },
-      marginRight: { value: 30, min: 0, max: 100, step: 1 },
-      marginBottom: { value: 20, min: 0, max: 100, step: 1 },
-      marginLeft: { value: 30, min: 0, max: 100, step: 1 },
-    });
+  const { debug, marginTop, marginRight, marginBottom, marginLeft } = useControls({
+    debug: false,
+    marginTop: { value: 10, min: 0, max: 100, step: 1 },
+    marginRight: { value: 30, min: 0, max: 100, step: 1 },
+    marginBottom: { value: 20, min: 0, max: 100, step: 1 },
+    marginLeft: { value: 30, min: 0, max: 100, step: 1 },
+  })
 
   //   console.log("Debug", debug);
 
@@ -37,50 +36,46 @@ export const ScatterPlot = observer(() => {
         id: "chart",
       },
     ],
-  });
+  })
 
   //   console.log("Yogurt", layout);
 
-  const attackValuesDomain = extent(
-    mst.data.map((datum) => datum.Attack).concat([0])
-  ) as [number, number];
-
-  const defenseValuesDomain = extent(
-    mst.data.map((datum) => datum.Defense).concat([0])
-  ) as [number, number];
-
-  const hpDomain = extent(mst.data.map((datum) => datum.HP)) as [
+  const attackValuesDomain = extent(mst.data.map((datum) => datum.Attack).concat([0])) as [
     number,
     number
-  ];
+  ]
 
-  const groupedTypes = Object.entries(countBy(mst.data, "Type 1"));
-  const uniqueTypes = orderBy(groupedTypes.map((type) => type[0]));
+  const defenseValuesDomain = extent(mst.data.map((datum) => datum.Defense).concat([0])) as [
+    number,
+    number
+  ]
 
-  const xScale = scaleLinear(attackValuesDomain, [
-    layout.chart.left,
-    layout.chart.right,
-  ]).nice(10);
+  const hpDomain = extent(mst.data.map((datum) => datum.HP)) as [number, number]
+
+  const groupedTypes = Object.entries(countBy(mst.data, "Type 1"))
+  const uniqueTypes = orderBy(groupedTypes.map((type) => type[0]))
+
+  const xScale = scaleLinear(attackValuesDomain, [layout.chart.left, layout.chart.right]).nice(10)
 
   const yScale = scaleLinear()
     .domain(defenseValuesDomain)
     .range([layout.chart.bottom, layout.chart.top])
-    .nice(10);
+    .nice(10)
 
-  const radiusScale = scaleSqrt(hpDomain, [2, 12]);
+  const radiusScale = scaleSqrt(hpDomain, [2, 12])
 
-  const orderedTypesColors = orderBy(TYPES, (t) => t.name).map((t) => t.color);
+  const orderedTypesColors = orderBy(TYPES, (t) => t.name).map((t) => t.color)
 
-  const coloScale = scaleOrdinal(uniqueTypes, orderedTypesColors);
+  const coloScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   const xTicks = xScale.ticks().map((value) => ({
     value,
     xOffset: xScale(value),
-  }));
+  }))
   const yTicks = yScale.ticks().map((value) => ({
     value,
     yOffset: yScale(value),
-  }));
+  }))
 
   //   console.log(yTicks);
 
@@ -217,11 +212,11 @@ export const ScatterPlot = observer(() => {
                   {datum.Name}
                 </text> */}
               </g>
-            );
+            )
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>
       </div>
     </section>
-  );
-});
+  )
+})

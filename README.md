@@ -1,5 +1,7 @@
 # Dataviz in React
 
+There are multiple ways to make dataviz using d3
+
 ## The Data we need
 
 ## Fetching the Data
@@ -11,12 +13,12 @@ First, a generic function that fetches the CSV. We can also use the `csv` method
 
 ```ts
 export async function fetchCSV<T extends object>(url: string) {
-  const response = await fetch(url);
+  const response = await fetch(url)
 
-  const text = await response.text();
-  const parsed = csvParse(text, autoType);
-  console.log([...parsed]); // lo spread rimuove gli altri campi
-  return [...parsed] as T[];
+  const text = await response.text()
+  const parsed = csvParse(text, autoType)
+  console.log([...parsed]) // lo spread rimuove gli altri campi
+  return [...parsed] as T[]
 }
 ```
 
@@ -24,35 +26,35 @@ Then we can specify the types of the Data rows we are working with. This will al
 
 ```ts
 interface RawPokemonDatum {
-  "#": number;
-  Name: string;
-  "Type 1": string;
-  "Type 2"?: string;
-  Total: number;
-  HP: number;
-  Attack: number;
-  Defense: number;
-  "Sp. Atk": number;
-  "Sp. Def": number;
-  Speed: number;
-  Generation: number;
-  Legendary: string;
+  "#": number
+  Name: string
+  "Type 1": string
+  "Type 2"?: string
+  Total: number
+  HP: number
+  Attack: number
+  Defense: number
+  "Sp. Atk": number
+  "Sp. Def": number
+  Speed: number
+  Generation: number
+  Legendary: string
 }
 
 export interface PokemonDatum {
-  "#": string;
-  Name: string;
-  "Type 1": string;
-  "Type 2"?: string;
-  Total: number;
-  HP: number;
-  Attack: number;
-  Defense: number;
-  "Sp. Atk": number;
-  "Sp. Def": number;
-  Speed: number;
-  Generation: number;
-  Legendary: boolean;
+  "#": string
+  Name: string
+  "Type 1": string
+  "Type 2"?: string
+  Total: number
+  HP: number
+  Attack: number
+  Defense: number
+  "Sp. Atk": number
+  "Sp. Def": number
+  Speed: number
+  Generation: number
+  Legendary: boolean
 }
 ```
 
@@ -64,15 +66,15 @@ function formatPokemonData(data: RawPokemonDatum[]): PokemonDatum[] {
     ...datum,
     "#": datum["#"].toString(),
     Legendary: datum.Legendary === "True",
-  }));
+  }))
 
-  return formattedData;
+  return formattedData
 }
 
 export async function fetchPokemon() {
-  const url = "/Pokemon.csv";
-  const rawData = await fetchCSV<RawPokemonDatum>(url);
-  return formatPokemonData(rawData);
+  const url = "/Pokemon.csv"
+  const rawData = await fetchCSV<RawPokemonDatum>(url)
+  return formatPokemonData(rawData)
 }
 ```
 
@@ -105,10 +107,10 @@ const groupedTypes = rollups(
   mst.data,
   (g) => g.length,
   (d) => d["Type 1"]
-);
+)
 
-const groupedTypes_LD = Object.entries(countBy(mst.data, "Type 1"));
-console.log("Types Rollup", groupedTypes, "Lodash", groupedTypes_LD);
+const groupedTypes_LD = Object.entries(countBy(mst.data, "Type 1"))
+console.log("Types Rollup", groupedTypes, "Lodash", groupedTypes_LD)
 ```
 
 The result is the same, but Lodash method is far more readable.

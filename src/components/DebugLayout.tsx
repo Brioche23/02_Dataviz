@@ -1,8 +1,8 @@
-import { LayoutBlock } from "yogurt-layout";
+import { LayoutBlock } from "yogurt-layout"
 
 export type DebugLayoutProps = {
-  layout: Record<string, LayoutBlock>;
-};
+  layout: Record<string, LayoutBlock>
+}
 
 export const DebugLayout = ({ layout }: DebugLayoutProps) => {
   // const debug = false;
@@ -32,17 +32,11 @@ export const DebugLayout = ({ layout }: DebugLayoutProps) => {
           >
             {id}
           </text>
-          <text
-            x={block.left}
-            y={block.top + 8}
-            fill="red"
-            fontSize={10}
-            textAnchor="start"
-          >
+          <text x={block.left} y={block.top + 8} fill="red" fontSize={10} textAnchor="start">
             {id}
           </text>
         </g>
       ))}
     </>
-  );
-};
+  )
+}

@@ -17,4 +17,4 @@ export const TYPES = [
   { name: "steel", color: "#B8B7CB" },
   { name: "dark", color: "#6C594B" },
   { name: "flying", color: "#A192C9" },
-];
+]

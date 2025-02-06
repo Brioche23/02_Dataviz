@@ -1,31 +1,24 @@
-import { observer } from "mobx-react-lite";
-import { useMst } from "../state";
-import { scalePoint, scaleOrdinal, scaleSqrt } from "d3-scale";
-import { extent, rollup, rollups, ticks } from "d3-array";
-import { countBy, groupBy, isNil, orderBy, sortBy } from "lodash";
-import { useControls } from "leva";
-import { makeLayout } from "yogurt-layout";
-import { DebugLayout } from "./DebugLayout";
-import { TYPES } from "../const";
+import { observer } from "mobx-react-lite"
+import { useMst } from "../state"
+import { scalePoint, scaleOrdinal, scaleSqrt } from "d3-scale"
+import { extent } from "d3-array"
+import { countBy, groupBy, orderBy, sortBy } from "lodash"
+import { useControls } from "leva"
+import { makeLayout } from "yogurt-layout"
+import { DebugLayout } from "./DebugLayout"
+import { TYPES } from "../const"
 
 export const MatrixPlot = observer(() => {
-  const mst = useMst();
+  const mst = useMst()
 
-  const {
-    debug,
-    marginTop,
-    marginRight,
-    marginBottom,
-    marginLeft,
-    scalePadding,
-  } = useControls({
+  const { debug, marginTop, marginRight, marginBottom, marginLeft, scalePadding } = useControls({
     debug: false,
     marginTop: { value: 10, min: 0, max: 100, step: 1 },
     marginRight: { value: 30, min: 0, max: 100, step: 1 },
     marginBottom: { value: 20, min: 0, max: 100, step: 1 },
     marginLeft: { value: 30, min: 0, max: 100, step: 1 },
     scalePadding: { value: 5, min: 0, max: 10, step: 1 },
-  });
+  })
 
   const layout = makeLayout({
     id: "root",
@@ -42,62 +35,36 @@ export const MatrixPlot = observer(() => {
         id: "chart",
       },
     ],
-  });
+  })
 
-  const groupedTypes1 = sortBy(Object.entries(countBy(mst.data, "Type 1")));
-  const uniqueTypes = groupedTypes1.map((type) => type[0]);
+  const groupedTypes = sortBy(Object.entries(countBy(mst.data, "Type 1")))
+  const uniqueTypes = groupedTypes.map((type) => type[0])
 
-  //   const groupedTypes2 = sortBy(Object.entries(countBy(mst.data, "Type 2")));
-  //   const uniqueTypes2 = groupedTypes2.map((type) => {
-  //     if (type[0] !== undefined) return type[0];
-  //     else return "Pure";
-  //   });
-  //   console.log(uniqueTypes2);
+  const groupedTypesCombo = Object.entries(
+    groupBy(mst.data, (d) => `${d["Type 1"]}__${d["Type 2"] ?? d["Type 1"]}`)
+  ).map(([k, v]) => ({
+    type1: k.split("__")[0],
+    type2: k.split("__")[1],
+    count: v.length,
+    list: v,
+  }))
 
-  const groupedTypesCombo = Array.from(
-    rollup(
-      mst.data,
-      (v) => v.length, // Count occurrences
-      (d) => d["Type 1"],
-      (d) => d["Type 2"]
-    )
-  ).flatMap(([type1, type2Map]) =>
-    Array.from(type2Map, ([type2, count]) => ({
-      type1,
-      type2: !isNil(type2) ? type2 : type1, // Ensure type2 is never undefined
-      count,
-    }))
-  );
+  console.log(groupedTypesCombo)
 
-  //   const groupedTypesCombo = countBy(
-  //     mst.data,
-  //     (d) => `${d["Type 1"]}_${d["Type 2"]}`
-  //   );
-  console.log("Group Types", groupedTypesCombo);
+  const quantityDomain = extent(groupedTypesCombo.map((datum) => datum.count)) as [number, number]
 
-  const quantityDomain = extent(
-    groupedTypesCombo.map((datum) => datum.count)
-  ) as [number, number];
+  const radiusScale = scaleSqrt(quantityDomain, [5, 20])
 
-  const radiusScale = scaleSqrt(quantityDomain, [5, 20]);
+  const xScale = scalePoint(uniqueTypes, [layout.chart.left, layout.chart.right]).padding(
+    scalePadding
+  )
+  const yScale = scalePoint(uniqueTypes, [layout.chart.bottom, layout.chart.top]).padding(
+    scalePadding
+  )
 
-  //   const groupedTypes = Object.entries(
-  //     groupBy(mst.data, (d) => d["Type 1"].concat(d["Type 2"]))
-  //   );
-  console.log("Group Types", groupedTypesCombo);
+  const orderedTypesColors = orderBy(TYPES, (t) => t.name).map((t) => t.color)
 
-  const xScale = scalePoint(uniqueTypes, [
-    layout.chart.left,
-    layout.chart.right,
-  ]).padding(scalePadding);
-  const yScale = scalePoint(uniqueTypes, [
-    layout.chart.bottom,
-    layout.chart.top,
-  ]).padding(scalePadding);
-
-  const orderedTypesColors = orderBy(TYPES, (t) => t.name).map((t) => t.color);
-
-  const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors);
+  const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   return (
     <section>
@@ -128,17 +95,12 @@ export const MatrixPlot = observer(() => {
                   stroke="#777777"
                 />
               </g>
-            );
+            )
           })}
           {uniqueTypes.map((t, i) => {
             return (
               <g key={i}>
-                <text
-                  fontSize={15}
-                  y={yScale(t)}
-                  x={layout.chart.left}
-                  fill="#FFFFFF"
-                >
+                <text fontSize={15} y={yScale(t)} x={layout.chart.left} fill="#FFFFFF">
                   {t}
                 </text>
                 <line
@@ -149,7 +111,7 @@ export const MatrixPlot = observer(() => {
                   stroke="#777777"
                 />
               </g>
-            );
+            )
           })}
 
           {/* Circles */}
@@ -166,11 +128,11 @@ export const MatrixPlot = observer(() => {
                   strokeWidth="3"
                 />
               </g>
-            );
+            )
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>
       </div>
     </section>
-  );
-});
+  )
+})
