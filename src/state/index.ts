@@ -4,6 +4,7 @@ import { Instance, t } from "mobx-state-tree"
 import { fetchPokemon, PokemonDatum } from "../api"
 import { IReactionDisposer } from "mobx"
 import { createContext, useContext } from "react"
+import { extent } from "d3-array"
 
 const lifeCycle =
   <T>(func: (self: T) => IReactionDisposer | void) =>
@@ -34,6 +35,9 @@ export const RootModel = t
   .actions((self) => ({
     setData(newData: PokemonDatum[]) {
       self.data = newData
+    },
+    getDomain(key: keyof PokemonDatum[]) {
+      // extent(self.data.map((datum) => datum[key])) as [number, number]
     },
   }))
   .actions(

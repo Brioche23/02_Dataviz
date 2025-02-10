@@ -7,8 +7,10 @@ import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { useControls } from "leva"
 import { TYPES } from "../const"
+import { Axes } from "./Axes"
+import { ChartProps } from "../utils/types"
 
-export const ScatterPlot = observer(() => {
+export const ScatterPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
   const { debug, marginTop, marginRight, marginBottom, marginLeft } = useControls({
@@ -23,17 +25,31 @@ export const ScatterPlot = observer(() => {
 
   const layout = makeLayout({
     id: "root",
-    width: 1000,
+    width: width,
     height: 1000,
     padding: {
-      top: marginTop,
+      //   top: marginTop,
       right: marginRight,
-      bottom: marginBottom,
-      left: marginLeft,
+      //   bottom: marginBottom,
+      //   left: marginLeft,
     },
     children: [
       {
-        id: "chart",
+        id: "yLabel",
+        width: 50,
+      },
+      {
+        id: "",
+        direction: "column",
+        children: [
+          {
+            id: "chart",
+          },
+          {
+            id: "xLabel",
+            height: 35,
+          },
+        ],
       },
     ],
   })
@@ -50,7 +66,7 @@ export const ScatterPlot = observer(() => {
     number
   ]
 
-  const hpDomain = extent(mst.data.map((datum) => datum.HP)) as [number, number]
+  const hpDomain = extent(mst.data.map((datum) => datum["HP"])) as [number, number]
 
   const groupedTypes = Object.entries(countBy(mst.data, "Type 1"))
   const uniqueTypes = orderBy(groupedTypes.map((type) => type[0]))
@@ -70,11 +86,11 @@ export const ScatterPlot = observer(() => {
 
   const xTicks = xScale.ticks().map((value) => ({
     value,
-    xOffset: xScale(value),
+    offset: xScale(value),
   }))
   const yTicks = yScale.ticks().map((value) => ({
     value,
-    yOffset: yScale(value),
+    offset: yScale(value),
   }))
 
   //   console.log(yTicks);
@@ -83,113 +99,14 @@ export const ScatterPlot = observer(() => {
     <section>
       <h1>ScatterPlot</h1>
       <div id="#scatter-plot">
-        <svg height={layout.root.height} width={layout.root.width}>
-          {/* X-Axis */}
-          <line
-            x1={layout.chart.left}
-            x2={layout.chart.right}
-            y1={layout.chart.bottom}
-            y2={layout.chart.bottom}
-            stroke="#FFFFFF"
+        <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
+          <Axes
+            margins={layout.chart}
+            xTicks={xTicks}
+            yTicks={yTicks}
+            xLabel="Attack"
+            yLabel="Defense"
           />
-          <g className="-x-ticks">
-            {xTicks.map(
-              (
-                { value, xOffset } // 1 map -> 1 rendering
-              ) => (
-                // Transform danno problemi -> dubbi su origin degli elementi
-                <line
-                  key={value}
-                  x1={xOffset}
-                  x2={xOffset}
-                  y1={layout.chart.bottom}
-                  y2={layout.chart.bottom + 6}
-                  stroke="#FFFFFF"
-                />
-              )
-            )}
-          </g>
-          <g className="-x-labels">
-            {xTicks.map(
-              (
-                { value, xOffset } // 1 map -> 1 rendering
-              ) => (
-                <text
-                  key={value}
-                  x={xOffset}
-                  y={layout.chart.bottom + 20}
-                  fill="#FFFFFF"
-                  fontSize={10}
-                  textAnchor="middle"
-                >
-                  {value}
-                </text>
-              )
-            )}
-            <text
-              x={layout.chart.right}
-              y={layout.chart.bottom + 30}
-              fill="#FFFFFF"
-              fontSize={10}
-              textAnchor="middle"
-            >
-              Attack
-            </text>
-          </g>
-
-          {/* Y-Axis */}
-          <line
-            x1={layout.chart.left}
-            x2={layout.chart.left}
-            y1={layout.chart.top}
-            y2={layout.chart.bottom}
-            stroke="#FFFFFF"
-          />
-
-          <g className="-y-ticks">
-            {yTicks.map(
-              (
-                { value, yOffset } // 1 map -> 1 rendering
-              ) => (
-                // Transform danno problemi -> dubbi su origin degli elementi
-                <line
-                  key={value}
-                  x1={layout.chart.left}
-                  x2={layout.chart.left - 6}
-                  y1={yOffset}
-                  y2={yOffset}
-                  stroke="#FFFFFF"
-                />
-              )
-            )}
-          </g>
-          <g className="-y-labels">
-            {yTicks.map(
-              (
-                { value, yOffset } // 1 map -> 1 rendering
-              ) => (
-                <text
-                  key={value}
-                  x={layout.chart.left - 20}
-                  y={yOffset}
-                  fill="#FFFFFF"
-                  fontSize={10}
-                  textAnchor="middle"
-                >
-                  {value}
-                </text>
-              )
-            )}
-            <text
-              x={layout.chart.left - 20}
-              y={layout.chart.top - 10}
-              fill="#FFFFFF"
-              fontSize={10}
-              textAnchor="middle"
-            >
-              Defense
-            </text>
-          </g>
 
           {/* Circles */}
           {mst.data.map((datum, index) => {
@@ -204,13 +121,6 @@ export const ScatterPlot = observer(() => {
                   fill={coloScale(datum["Type 1"])}
                   opacity={15 * datum.Generation + "%"}
                 />
-                {/* <text
-                  x={xScale(datum.Attack)}
-                  y={yScale(datum.Defense)}
-                  fill="#DDDDDD"
-                >
-                  {datum.Name}
-                </text> */}
               </g>
             )
           })}

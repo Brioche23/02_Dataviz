@@ -1,6 +1,6 @@
 # Dataviz in React
 
-There are multiple ways to make dataviz using d3
+There are multiple ways to make dataviz using d3. The best way is to use d3 to compute the logic (create scales) and to apply them directly to SVG elements in the TSX using react.
 
 ## The Data we need
 
@@ -96,6 +96,12 @@ function App() {
 
 ## D3.js
 
+### ScatterPlot
+
+### Correlogram
+
+### Stacked Bar Chart
+
 ## Utils
 
 ### Rollups vs CountBy
@@ -114,3 +120,49 @@ console.log("Types Rollup", groupedTypes, "Lodash", groupedTypes_LD)
 ```
 
 The result is the same, but Lodash method is far more readable.
+
+### Isolate properties and groupBy two properties
+
+```js
+const groupedTypes = sortBy(Object.entries(countBy(mst.data, "Type 1")))
+const uniqueTypes = groupedTypes.map((type) => type[0])
+
+// First i group by a concat of two properties (with unsusal char in the middle)
+const groupedTypesCombo = Object.entries(
+  groupBy(mst.data, (d) => `${d["Type 1"]}__${d["Type 2"] ?? d["Type 1"]}`)
+).map(([k, v]) => ({
+  // then create an object by splitting the key into the two props again
+  type1: k.split("__")[0],
+  type2: k.split("__")[1],
+  count: v.length,
+  list: v,
+}))
+```
+
+## Yogurt Layoyut
+
+## Lava
+
+##
+
+```js
+//  BREAKDOWN OF DATA SELECTION
+
+const step1 = Object.entries(groupBy(mst.data, (d) => `${d["Generation"]}__${d["Type 1"]}`)).map(
+  ([k, v]) => ({
+    gen: k.split("__")[0],
+    type: k.split("__")[1],
+    count: v.length,
+    list: v,
+  })
+)
+console.log("typesPerGen", typesPerGen)
+
+//   const groupTypesPerGen = typesPerGen.map((o) => o.gen)
+const step2 = Object.entries(groupBy(typesPerGen, (t) => t.gen))
+
+const step3 = step2.map(([gen, types]) => ({
+  gen,
+  ...mapValues(keyBy(types, "type"), "count"),
+}))
+```

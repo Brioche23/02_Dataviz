@@ -7,8 +7,9 @@ import { useControls } from "leva"
 import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { TYPES } from "../const"
+import { ChartProps } from "../utils/types"
 
-export const MatrixPlot = observer(() => {
+export const MatrixPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
   const { debug, marginTop, marginRight, marginBottom, marginLeft, scalePadding } = useControls({
@@ -20,25 +21,52 @@ export const MatrixPlot = observer(() => {
     scalePadding: { value: 5, min: 0, max: 10, step: 1 },
   })
 
+  //   useEffect(() => {
+  //     function getPageSize() {
+  //       console.log("w", window.innerWidth, "h", window.innerHeight)
+
+  //       setPageSize({
+  //         width: window.innerWidth,
+  //         height: window.innerHeight,
+  //       })
+  //     }
+  //     // Se dichiaro callback con ()=> ne crea una nuova, ergo non la posso usare nel remove
+  //     // Valore contenuto !== al riferimento in memoria
+  //     window.addEventListener("resize", getPageSize) //se non rimuovo, si incrementano
+
+  //     return () => window.removeEventListener("resize", getPageSize)
+  //     // console.log("w", getPageSize().width, "h", getPageSize().height)
+  //   }, [setPageSize])
+
   const layout = makeLayout({
     id: "root",
-    width: 1000,
+    width: width,
     height: 1000,
-    padding: {
-      top: marginTop,
-      right: marginRight,
-      bottom: marginBottom,
-      left: marginLeft,
-    },
+    // padding: {
+    //   top: marginTop,
+    //   right: marginRight,
+    //   bottom: marginBottom,
+    //   left: marginLeft,
+    // },
     children: [
+      { id: "yLabel", width: 75 },
       {
-        id: "chart",
+        id: "chartBox",
+        direction: "column",
+        children: [
+          {
+            id: "xLabel",
+            height: 40,
+          },
+          {
+            id: "chart",
+          },
+        ],
       },
     ],
   })
 
-  const groupedTypes = sortBy(Object.entries(countBy(mst.data, "Type 1")))
-  const uniqueTypes = groupedTypes.map((type) => type[0])
+  const uniqueTypes = sortBy(Object.entries(countBy(mst.data, "Type 1"))).map((type) => type[0])
 
   const groupedTypesCombo = Object.entries(
     groupBy(mst.data, (d) => `${d["Type 1"]}__${d["Type 2"] ?? d["Type 1"]}`)
@@ -52,18 +80,12 @@ export const MatrixPlot = observer(() => {
   console.log(groupedTypesCombo)
 
   const quantityDomain = extent(groupedTypesCombo.map((datum) => datum.count)) as [number, number]
-
   const radiusScale = scaleSqrt(quantityDomain, [5, 20])
 
-  const xScale = scalePoint(uniqueTypes, [layout.chart.left, layout.chart.right]).padding(
-    scalePadding
-  )
-  const yScale = scalePoint(uniqueTypes, [layout.chart.bottom, layout.chart.top]).padding(
-    scalePadding
-  )
+  const xScale = scalePoint(uniqueTypes, [layout.chart.left, layout.chart.right])
+  const yScale = scalePoint(uniqueTypes, [layout.chart.bottom, layout.chart.top])
 
   const orderedTypesColors = orderBy(TYPES, (t) => t.name).map((t) => t.color)
-
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   return (
@@ -73,25 +95,27 @@ export const MatrixPlot = observer(() => {
         <p>{groupedTypesCombo.length}</p>
       </div>
       <div id="#scatter-plot">
-        <svg height={layout.root.height} width={layout.root.width}>
+        <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
           {/*Axis*/}
           {uniqueTypes.map((t, i) => {
             return (
               <g key={i} className="-y-axises">
                 <text
-                  fontSize={10}
+                  className="-x-label"
+                  fontSize={12}
                   x={xScale(t)}
-                  y={layout.chart.top}
+                  y={layout.xLabel.top}
                   fill="#FFFFFF"
                   textAnchor="middle"
+                  dominantBaseline={"hanging"}
                 >
                   {t}
                 </text>
                 <line
                   x1={xScale(t)}
                   x2={xScale(t)}
-                  y1={layout.root.top}
-                  y2={layout.root.bottom}
+                  y1={layout.chart.top}
+                  y2={layout.chart.bottom}
                   stroke="#777777"
                 />
               </g>
@@ -99,13 +123,13 @@ export const MatrixPlot = observer(() => {
           })}
           {uniqueTypes.map((t, i) => {
             return (
-              <g key={i}>
-                <text fontSize={15} y={yScale(t)} x={layout.chart.left} fill="#FFFFFF">
+              <g key={i} className="-x-axises">
+                <text fontSize={15} y={yScale(t)} x={layout.yLabel.left} fill="#FFFFFF">
                   {t}
                 </text>
                 <line
-                  x1={layout.root.left}
-                  x2={layout.root.right}
+                  x1={layout.chart.left}
+                  x2={layout.chart.right}
                   y1={yScale(t)}
                   y2={yScale(t)}
                   stroke="#777777"
