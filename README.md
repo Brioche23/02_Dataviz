@@ -104,6 +104,102 @@ function App() {
 
 ## Utils
 
+### Responsive Charts
+
+To make a chart responsive we have to first detect the changes in window size. To do that we can use and eventListenter -> to use an eventListener we create a useEffect and finally, since we would like to save our page size in a state variable, let's create a custom hook altogether.
+
+In `useWindowSize.ts`
+
+```js
+import { useEffect, useState } from "react"
+
+function getPageSize() {
+  console.log("w", window.innerWidth, "h", window.innerHeight)
+
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+  }
+}
+
+export function useWindowSize() {
+  const [pageSize, setPageSize] = useState(getPageSize())
+
+  useEffect(() => {
+    function handleResize() {
+      setPageSize(getPageSize())
+    }
+
+    window.addEventListener("resize", handleResize) //se non rimuovo, si incrementano
+
+    return () => window.removeEventListener("resize", handleResize)
+  }, [setPageSize])
+
+  return pageSize
+}
+```
+
+We don't want to access this hook from every individual chart, so we can call it just from the App.tsx file, and pass down the dimensions as props.
+
+In `App.tsx`
+
+```tsx
+const MAX_CHART_WIDTH = 1000
+const CHART_MARGINS = 50
+
+const App = observer(() => {
+  const mst = useMst()
+
+  const pageSize = useWindowSize()
+  const chartWidth = Math.min(MAX_CHART_WIDTH, pageSize.width - CHART_MARGINS)
+
+  console.log("mst length", mst.data.length)
+  return (
+    <main>
+      <h1>Test Data Print</h1>
+      <h2>Length</h2>
+      {mst.data?.length ?? "Loading..."}
+
+      {mst.data && (
+        <section>
+          <StackedBarChart width={chartWidth} />
+          <MatrixPlot width={chartWidth} />
+          <ScatterPlot width={chartWidth} />
+          <h2>Pokemons</h2>
+          <Table />
+        </section>
+      )}
+    </main>
+  )
+})
+
+export default App
+```
+
+and we can apply the width as a layout property value of our YogurtLayout
+
+```ts
+const layout = makeLayout({
+  id: "root",
+  width: width, //applying the width taken as prop
+  height: 1000,
+  padding: {
+    right: marginRight,
+  },
+  children: [
+    {
+      id: "yLabel",
+      width: 50,
+    },
+    {
+      id: "",
+      direction: "column",
+      children: [{ id: "chart" }, { id: "xLabel", height: 35 }],
+    },
+  ],
+})
+```
+
 ### Rollups vs CountBy
 
 To extract the unique values in a column we can either use `rollups` by d3 or `countBy` from Lodash and then extract them with `Object.entries()`
@@ -143,7 +239,7 @@ const groupedTypesCombo = Object.entries(
 
 ## Lava
 
-##
+## Data processing
 
 ```js
 //  BREAKDOWN OF DATA SELECTION
@@ -165,4 +261,31 @@ const step3 = step2.map(([gen, types]) => ({
   gen,
   ...mapValues(keyBy(types, "type"), "count"),
 }))
+```
+
+This code lacked of a check to see if every object had all the possible types. Missing types were causing problems in the generation of the bar chart stacks.
+
+To resolve that we can create a typeTemplate with all the variables properties set to 0 and than with the spread operator we can overwrite just the types that actually had a count.
+
+```js
+const typeTemplate = Object.fromEntries(uniqueTypes.map((type) => [type, 0]))
+
+const typesPerGen = Object.entries(
+  groupBy(mst.data, (d) => `${d["Generation"]}__${d["Type 1"]}`)
+).map(([k, v]) => ({
+  gen: k.split("__")[0],
+  type: k.split("__")[1],
+  count: v.length,
+}))
+
+const groupTypesPerGen: Group[] = Object.entries(groupBy(typesPerGen, (t) => t.gen)).map(
+  ([gen, types]) => {
+    const newObject: { [key: string]: number } = mapValues(keyBy(types, "type"), "count")
+    return {
+      gen: toNumber(gen),
+      ...typeTemplate, // This adds all types with 0
+      ...newObject,
+    }
+  }
+)
 ```

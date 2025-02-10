@@ -4,7 +4,7 @@ import { Instance, t } from "mobx-state-tree"
 import { fetchPokemon, PokemonDatum } from "../api"
 import { IReactionDisposer } from "mobx"
 import { createContext, useContext } from "react"
-import { extent } from "d3-array"
+import { MatrixDatum } from "../utils/types"
 
 const lifeCycle =
   <T>(func: (self: T) => IReactionDisposer | void) =>
@@ -24,8 +24,9 @@ const lifeCycle =
 export const RootModel = t
   .model("RootModel", {
     data: t.optional(t.frozen<PokemonDatum[]>(), []),
-    hoveredDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
-    selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
+    hoveredDatumScatterPlot: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
+    hoveredDatumMatrix: t.optional(t.frozen<MatrixDatum | undefined>(), undefined),
+    // selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
   })
   .views((self) => ({
     get columns() {
@@ -36,8 +37,16 @@ export const RootModel = t
     setData(newData: PokemonDatum[]) {
       self.data = newData
     },
-    getDomain(key: keyof PokemonDatum[]) {
-      // extent(self.data.map((datum) => datum[key])) as [number, number]
+    // getDomain(key: keyof PokemonDatum[]) {
+    //   // extent(self.data.map((datum) => datum[key])) as [number, number]
+    // },
+    setHoveredScatterPlot(datum: PokemonDatum | undefined) {
+      console.log(datum)
+      self.hoveredDatumScatterPlot = datum
+    },
+    setHoveredMatrix(datum: MatrixDatum | undefined) {
+      console.log(datum)
+      self.hoveredDatumMatrix = datum
     },
   }))
   .actions(

@@ -8,17 +8,13 @@ import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { TYPES } from "../const"
 import { ChartProps } from "../utils/types"
+import { Tooltip } from "./Tooltip"
 
 export const MatrixPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
-  const { debug, marginTop, marginRight, marginBottom, marginLeft, scalePadding } = useControls({
+  const { debug } = useControls({
     debug: false,
-    marginTop: { value: 10, min: 0, max: 100, step: 1 },
-    marginRight: { value: 30, min: 0, max: 100, step: 1 },
-    marginBottom: { value: 20, min: 0, max: 100, step: 1 },
-    marginLeft: { value: 30, min: 0, max: 100, step: 1 },
-    scalePadding: { value: 5, min: 0, max: 10, step: 1 },
   })
 
   //   useEffect(() => {
@@ -42,26 +38,13 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
     id: "root",
     width: width,
     height: 1000,
-    // padding: {
-    //   top: marginTop,
-    //   right: marginRight,
-    //   bottom: marginBottom,
-    //   left: marginLeft,
-    // },
+
     children: [
       { id: "yLabel", width: 75 },
       {
         id: "chartBox",
         direction: "column",
-        children: [
-          {
-            id: "xLabel",
-            height: 40,
-          },
-          {
-            id: "chart",
-          },
-        ],
+        children: [{ id: "xLabel", height: 40 }, { id: "chart" }],
       },
     ],
   })
@@ -77,7 +60,7 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
     list: v,
   }))
 
-  console.log(groupedTypesCombo)
+  // console.log(groupedTypesCombo)
 
   const quantityDomain = extent(groupedTypesCombo.map((datum) => datum.count)) as [number, number]
   const radiusScale = scaleSqrt(quantityDomain, [5, 20])
@@ -89,12 +72,12 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   return (
-    <section>
+    <section id="matrix-plot">
       <h1>MatrixPlot</h1>
       <div>
         <p>{groupedTypesCombo.length}</p>
       </div>
-      <div id="#scatter-plot">
+      <div>
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
           {/*Axis*/}
           {uniqueTypes.map((t, i) => {
@@ -137,7 +120,6 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
               </g>
             )
           })}
-
           {/* Circles */}
           {groupedTypesCombo.map((datum, index) => {
             return (
@@ -150,12 +132,27 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
                   fill={colorScale(datum.type1)}
                   stroke={colorScale(datum.type2)}
                   strokeWidth="3"
+                  onMouseOver={() => mst.setHoveredMatrix(datum)}
+                  onMouseLeave={() => mst.setHoveredMatrix(undefined)}
                 />
               </g>
             )
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>
+        <div>test</div>
+        {mst.hoveredDatumMatrix && (
+          <Tooltip>
+            <p>
+              <span>{mst.hoveredDatumMatrix?.type1}</span>/
+              <span>{mst.hoveredDatumMatrix?.type2}</span>
+            </p>
+            <p>{mst.hoveredDatumMatrix?.count}</p>
+            {mst.hoveredDatumMatrix?.list.map((d) => {
+              return <p>{d.Name}</p>
+            })}
+          </Tooltip>
+        )}
       </div>
     </section>
   )

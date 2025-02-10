@@ -1,0 +1,14 @@
+.tooltip {
+  position: absolute;
+  font-size: 20px;
+  color: black;
+  background-color: white;
+  border-radius: 10px;
+  padding: 5px 10px;
+  /* transition: all 800ms ease-out; */
+  opacity: 100;
+}
+
+.active {
+  opacity: 100;
+}

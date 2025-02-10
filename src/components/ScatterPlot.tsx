@@ -9,11 +9,12 @@ import { useControls } from "leva"
 import { TYPES } from "../const"
 import { Axes } from "./Axes"
 import { ChartProps } from "../utils/types"
+import { Tooltip } from "./Tooltip"
 
 export const ScatterPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
-  const { debug, marginTop, marginRight, marginBottom, marginLeft } = useControls({
+  const { debug, marginRight } = useControls({
     debug: false,
     marginTop: { value: 10, min: 0, max: 100, step: 1 },
     marginRight: { value: 30, min: 0, max: 100, step: 1 },
@@ -21,17 +22,12 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
     marginLeft: { value: 30, min: 0, max: 100, step: 1 },
   })
 
-  //   console.log("Debug", debug);
-
   const layout = makeLayout({
     id: "root",
     width: width,
     height: 1000,
     padding: {
-      //   top: marginTop,
       right: marginRight,
-      //   bottom: marginBottom,
-      //   left: marginLeft,
     },
     children: [
       {
@@ -41,20 +37,12 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
       {
         id: "",
         direction: "column",
-        children: [
-          {
-            id: "chart",
-          },
-          {
-            id: "xLabel",
-            height: 35,
-          },
-        ],
+        children: [{ id: "chart" }, { id: "xLabel", height: 35 }],
       },
     ],
   })
 
-  //   console.log("Yogurt", layout);
+  // console.log("Yogurt", layout);
 
   const attackValuesDomain = extent(mst.data.map((datum) => datum.Attack).concat([0])) as [
     number,
@@ -96,7 +84,7 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
   //   console.log(yTicks);
 
   return (
-    <section>
+    <section id="scatter-plot">
       <h1>ScatterPlot</h1>
       <div id="#scatter-plot">
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
@@ -120,12 +108,20 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
                   r={radiusScale(datum.HP)}
                   fill={coloScale(datum["Type 1"])}
                   opacity={15 * datum.Generation + "%"}
+                  onMouseOver={() => mst.setHoveredScatterPlot(datum)}
+                  onMouseLeave={() => mst.setHoveredScatterPlot(undefined)}
                 />
               </g>
             )
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>
+
+        {mst.hoveredDatumScatterPlot && (
+          <Tooltip>
+            <p>{mst.hoveredDatumScatterPlot?.Name}</p>
+          </Tooltip>
+        )}
       </div>
     </section>
   )

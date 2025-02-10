@@ -7,7 +7,6 @@ import { ScatterPlot } from "./components/ScatterPlot"
 import { MatrixPlot } from "./components/MatrixPlot"
 import { StackedBarChart } from "./components/StackedBarChart"
 import { useWindowSize } from "./hooks/useWindowSize"
-// import { StackedBarChart2 } from "./components/StackedBarChart2"
 
 const MAX_CHART_WIDTH = 1000
 const CHART_MARGINS = 50
@@ -23,11 +22,16 @@ const App = observer(() => {
       <h1>Test Data Print</h1>
       <h2>Length</h2>
       {mst.data?.length ?? "Loading..."}
-      <StackedBarChart width={chartWidth} />
-      <MatrixPlot width={chartWidth} />
-      <ScatterPlot width={chartWidth} />
-      <h2>Pokemons</h2>
-      <Table />
+
+      {mst.data?.length > 0 && (
+        <section>
+          <StackedBarChart width={chartWidth} />
+          <MatrixPlot width={chartWidth} />
+          <ScatterPlot width={chartWidth} />
+          <h2>Pokemons</h2>
+          <Table />
+        </section>
+      )}
     </main>
   )
 })
