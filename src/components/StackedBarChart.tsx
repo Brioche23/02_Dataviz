@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
-import { scaleBand, scaleLinear, scaleOrdinal, scaleSqrt } from "d3-scale"
+import { scaleBand, scaleLinear, scaleOrdinal } from "d3-scale"
 import { extent } from "d3-array"
 import { countBy, groupBy, keyBy, mapValues, orderBy, toNumber } from "lodash"
 import { useControls } from "leva"
@@ -18,52 +18,39 @@ type Group = {
 export const StackedBarChart = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
-  const { debug, marginTop, marginRight, marginBottom, marginLeft, scalePadding } = useControls({
+  const { debug, marginRight } = useControls({
     debug: false,
-    marginTop: { value: 10, min: 0, max: 100, step: 1 },
+    // marginTop: { value: 10, min: 0, max: 100, step: 1 },
     marginRight: { value: 30, min: 0, max: 100, step: 1 },
-    marginBottom: { value: 20, min: 0, max: 100, step: 1 },
-    marginLeft: { value: 30, min: 0, max: 100, step: 1 },
-    scalePadding: { value: 10, min: 0, max: 10, step: 1 },
+    // marginBottom: { value: 20, min: 0, max: 100, step: 1 },
+    // marginLeft: { value: 30, min: 0, max: 100, step: 1 },
+    // scalePadding: { value: 10, min: 0, max: 10, step: 1 },
   })
 
   const layout = makeLayout({
     id: "root",
     width: width,
     height: 1000,
-    padding: {
-      right: marginRight,
-    },
+    padding: { right: marginRight },
     children: [
-      {
-        id: "yLabel",
-        width: 50,
-      },
+      { id: "yLabel", width: 50 },
       {
         id: "",
         direction: "column",
-        children: [
-          {
-            id: "chart",
-          },
-          {
-            id: "xLabel",
-            height: 35,
-          },
-        ],
+        children: [{ id: "chart" }, { id: "xLabel", height: 35 }],
       },
     ],
   })
 
-  const generationGroups = orderBy(mst.data.map((datum) => datum.Generation))
-  const generationDomain = extent(generationGroups) as [number, number]
-
   const groupedTypes = Object.entries(countBy(mst.data, "Type 1"))
   const uniqueTypes = orderBy(groupedTypes.map((type) => type[0]))
-  console.log("uniqueTypes", uniqueTypes)
+  // console.log("uniqueTypes", uniqueTypes)
 
   const groupsByGen = groupBy(mst.data, (d) => d.Generation)
-  console.log("groupsByGen", groupsByGen)
+  // console.log("groupsByGen", groupsByGen)
+
+  const typeTemplate = Object.fromEntries(uniqueTypes.map((type) => [type, 0]))
+  // console.log("typeTemplate", typeTemplate)
 
   const typesPerGen = Object.entries(
     groupBy(mst.data, (d) => `${d["Generation"]}__${d["Type 1"]}`)
@@ -73,39 +60,22 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
     count: v.length,
     // list: v,
   }))
-  console.log("typesPerGen", typesPerGen)
 
-  //   const groupTypesPerGen: Group[] = Object.entries(groupBy(typesPerGen, (t) => t.gen)).map(
-  //     ([gen, types]) => {
-  //       const newObject: { [key: string]: number } = mapValues(keyBy(types, "type"), "count")
-  //       return {
-  //         gen: toNumber(gen),
-  //         ...newObject,
-  //       }
-  //     }
-  //   )
+  // console.log("typesPerGen", typesPerGen)
 
-  // Transform data ensuring all types exist for each generation
-  const groupTypesPerGen: Group[] = generationGroups.map((gen) => {
-    // Create base object with generation
-    const baseObj: Group = { gen: toNumber(gen) }
+  const groupTypesPerGen: Group[] = Object.entries(groupBy(typesPerGen, (t) => t.gen)).map(
+    ([gen, types]) => {
+      const newObject: { [key: string]: number } = mapValues(keyBy(types, "type"), "count")
+      return {
+        gen: toNumber(gen),
+        ...typeTemplate, // This adds all types with 0
+        ...newObject,
+      }
+    }
+  )
 
-    // Initialize all types with 0
-    uniqueTypes.forEach((type) => {
-      baseObj[type] = 0
-    })
-
-    // Fill in actual values where they exist
-    typesPerGen
-      .filter((t) => toNumber(t.gen) === toNumber(gen))
-      .forEach((t) => {
-        baseObj[t.type] = t.count
-      })
-
-    return baseObj
-  })
-
-  console.log("groupTypesPerGen", groupTypesPerGen)
+  const generationGroups = orderBy(groupTypesPerGen.map((datum) => datum.gen))
+  const generationDomain = extent(generationGroups.concat(0)) as [number, number]
 
   const verticalDomain = extent(
     Object.entries(groupsByGen)
@@ -114,29 +84,10 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
   ) as [number, number]
   console.log("VD", verticalDomain)
 
-  //   const datas = [
-  //     {
-  //       Generation: 1,
-  //       "Type 1": 10,
-  //       "Type 2": 50,
-  //       "Type n": (count),
-  //     },
-  //     {
-  //       Generation: 2,
-  //       "Type 1": 10,
-  //       "Type 2": 50,
-  //       "Type n": (count),
-  //     },
-  //   ]
   const stackSeries = stack().keys(uniqueTypes).order(stackOrderNone)
   const series = stackSeries(groupTypesPerGen)
-  console.log("Stack", series)
 
-  console.log("Groups Gen", Object.entries(groupsByGen))
-
-  //   return null
-
-  const xScale = scaleBand(generationGroups, [layout.chart.left, layout.chart.right]).padding(0.1)
+  const xScale = scaleBand(generationGroups, [layout.chart.left, layout.chart.right]).padding(0.05)
 
   const xScaleLinear = scaleLinear(generationDomain, [layout.chart.left, layout.chart.right])
 
@@ -147,20 +98,17 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
 
   const orderedTypesColors = orderBy(TYPES, (t) => t.name).map((t) => t.color)
 
-  //   const stackedData = stack().keys(uniqueTypes)
-  //   console.log("Keys", stackedData)
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   const xTicks = xScaleLinear.ticks().map((value) => ({
-    value,
+    value: value + 0.5,
     offset: xScaleLinear(value),
   }))
+
   const yTicks = yScale.ticks().map((value) => ({
     value,
     offset: yScale(value),
   }))
-
-  //   console.log(yTicks);
 
   return (
     <section>
@@ -183,7 +131,7 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
                   return (
                     <rect
                       key={j}
-                      x={xScale(group[0])}
+                      x={xScale(group.data.gen)}
                       y={yScale(group[1])}
                       width={xScale.bandwidth()}
                       height={yScale(group[0]) - yScale(group[1])}

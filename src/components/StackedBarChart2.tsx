@@ -1,4 +1,3 @@
-import React from "react"
 import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { scaleBand, scaleLinear, scaleOrdinal } from "d3-scale"
@@ -45,6 +44,7 @@ export const StackedBarChart2 = observer(({ width }: ChartProps) => {
 
   // Create a single Map for types to track counts - O(N)
   const typeCountMap = new Map<string, Map<number, number>>()
+  console.log("typeCountMap", typeCountMap)
   const generationSet = new Set<number>()
 
   // Single pass through the data to build our maps - O(N)

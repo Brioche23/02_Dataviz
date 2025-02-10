@@ -7,6 +7,7 @@ import { ScatterPlot } from "./components/ScatterPlot"
 import { MatrixPlot } from "./components/MatrixPlot"
 import { StackedBarChart } from "./components/StackedBarChart"
 import { useWindowSize } from "./hooks/useWindowSize"
+// import { StackedBarChart2 } from "./components/StackedBarChart2"
 
 const MAX_CHART_WIDTH = 1000
 const CHART_MARGINS = 50
