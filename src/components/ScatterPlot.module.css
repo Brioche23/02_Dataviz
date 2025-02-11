@@ -1,0 +1,14 @@
+.filter {
+  width: 500px;
+  display: flex;
+  gap: 5px;
+}
+
+.filter-chip {
+  padding: 10px 20px;
+  border: 1px white solid;
+  border-radius: 20px;
+  &.active {
+    background-color: #545454;
+  }
+}

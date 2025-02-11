@@ -7,9 +7,12 @@ import { useControls } from "leva"
 import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { TYPES } from "../const"
-import { Axes } from "./Axes"
 import { stack, stackOrderNone } from "d3"
 import { ChartProps } from "../utils/types"
+import styles from "./StackedBarChart.module.css"
+import { Tooltip } from "./Tooltip"
+import { YAxis } from "./YAxis"
+import { XAxis } from "./XAxis"
 
 type Group = {
   gen: number
@@ -20,11 +23,7 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
 
   const { debug, marginRight } = useControls({
     debug: false,
-    // marginTop: { value: 10, min: 0, max: 100, step: 1 },
     marginRight: { value: 30, min: 0, max: 100, step: 1 },
-    // marginBottom: { value: 20, min: 0, max: 100, step: 1 },
-    // marginLeft: { value: 30, min: 0, max: 100, step: 1 },
-    // scalePadding: { value: 10, min: 0, max: 10, step: 1 },
   })
 
   const layout = makeLayout({
@@ -44,13 +43,10 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
 
   const groupedTypes = Object.entries(countBy(mst.data, "Type 1"))
   const uniqueTypes = orderBy(groupedTypes.map((type) => type[0]))
-  // console.log("uniqueTypes", uniqueTypes)
 
   const groupsByGen = groupBy(mst.data, (d) => d.Generation)
-  // console.log("groupsByGen", groupsByGen)
 
   const typeTemplate = Object.fromEntries(uniqueTypes.map((type) => [type, 0]))
-  // console.log("typeTemplate", typeTemplate)
 
   const typesPerGen = Object.entries(
     groupBy(mst.data, (d) => `${d["Generation"]}__${d["Type 1"]}`)
@@ -60,8 +56,6 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
     count: v.length,
     // list: v,
   }))
-
-  // console.log("typesPerGen", typesPerGen)
 
   const groupTypesPerGen: Group[] = Object.entries(groupBy(typesPerGen, (t) => t.gen)).map(
     ([gen, types]) => {
@@ -75,7 +69,6 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
   )
 
   const generationGroups = orderBy(groupTypesPerGen.map((datum) => datum.gen))
-  const generationDomain = extent(generationGroups.concat(0)) as [number, number]
 
   const verticalDomain = extent(
     Object.entries(groupsByGen)
@@ -89,8 +82,6 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
 
   const xScale = scaleBand(generationGroups, [layout.chart.left, layout.chart.right]).padding(0.05)
 
-  const xScaleLinear = scaleLinear(generationDomain, [layout.chart.left, layout.chart.right])
-
   const yScale = scaleLinear()
     .domain(verticalDomain)
     .range([layout.chart.bottom, layout.chart.top])
@@ -100,9 +91,9 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
 
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
-  const xTicks = xScaleLinear.ticks().map((value) => ({
-    value: value + 0.5,
-    offset: xScaleLinear(value),
+  const xTicks = generationGroups.map((value) => ({
+    value,
+    offset: xScale(value) + xScale.bandwidth() / 2,
   }))
 
   const yTicks = yScale.ticks().map((value) => ({
@@ -115,13 +106,8 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
       <h1>Stacked Bar Chart</h1>
       <div id="#scatter-plot">
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
-          <Axes
-            margins={layout.chart}
-            xTicks={xTicks}
-            yTicks={yTicks}
-            xLabel="Generation"
-            yLabel="Sum"
-          />
+          <XAxis margins={layout.chart} xTicks={xTicks} xLabel="Generation" />
+          <YAxis margins={layout.chart} yTicks={yTicks} yLabel="Pokemons" />
 
           {/* Circles */}
           {series.map((subgroup, index) => {
@@ -136,6 +122,14 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
                       width={xScale.bandwidth()}
                       height={yScale(group[0]) - yScale(group[1])}
                       fill={colorScale(subgroup.key)}
+                      className={styles.rect}
+                      onMouseOver={() =>
+                        mst.setHoveredStack({
+                          type: subgroup.key,
+                          count: group.data[subgroup.key],
+                        })
+                      }
+                      onMouseLeave={() => mst.setHoveredStack(undefined)}
                     />
                   )
                 })}
@@ -144,6 +138,16 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>
+
+        {mst.hoveredDatumStack && (
+          <Tooltip>
+            <p>
+              <span className="title">{mst.hoveredDatumStack?.type}</span>
+              <span>:</span>
+              <span>{mst.hoveredDatumStack?.count}</span>
+            </p>
+          </Tooltip>
+        )}
       </div>
     </section>
   )

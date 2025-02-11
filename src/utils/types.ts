@@ -10,6 +10,10 @@ export interface MatrixDatum {
   count: number
   list: PokemonDatum[]
 }
+export interface StackDatum {
+  type: string
+  count: number
+}
 
 // interface mousePosition {
 //   x: number

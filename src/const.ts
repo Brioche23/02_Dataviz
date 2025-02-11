@@ -18,3 +18,30 @@ export const TYPES = [
   { name: "dark", color: "#6C594B" },
   { name: "flying", color: "#A192C9" },
 ]
+
+export const REGIONS = [
+  {
+    gen: 1,
+    region: "Kanto",
+  },
+  {
+    gen: 2,
+    region: "Johto",
+  },
+  {
+    gen: 3,
+    region: "Hoenn",
+  },
+  {
+    gen: 4,
+    region: "Sinnoh",
+  },
+  {
+    gen: 5,
+    region: "Unova",
+  },
+  {
+    gen: 6,
+    region: "Kalos",
+  },
+]

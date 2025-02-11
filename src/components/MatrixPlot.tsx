@@ -140,14 +140,29 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>
-        <div>test</div>
+
         {mst.hoveredDatumMatrix && (
           <Tooltip>
-            <p>
-              <span>{mst.hoveredDatumMatrix?.type1}</span>/
-              <span>{mst.hoveredDatumMatrix?.type2}</span>
-            </p>
+            {mst.hoveredDatumMatrix.type1 === mst.hoveredDatumMatrix.type2 ? (
+              <p>
+                <span style={{ color: colorScale(mst.hoveredDatumMatrix.type1) }}>
+                  {mst.hoveredDatumMatrix?.type1}
+                </span>
+              </p>
+            ) : (
+              <p>
+                <span style={{ color: colorScale(mst.hoveredDatumMatrix.type1) }}>
+                  {mst.hoveredDatumMatrix?.type1}
+                </span>
+                <span>/</span>
+                <span style={{ color: colorScale(mst.hoveredDatumMatrix.type2) }}>
+                  {mst.hoveredDatumMatrix?.type2}
+                </span>
+              </p>
+            )}
+            <hr />
             <p>{mst.hoveredDatumMatrix?.count}</p>
+            <hr />
             {mst.hoveredDatumMatrix?.list.map((d) => {
               return <p>{d.Name}</p>
             })}

@@ -1,10 +1,10 @@
-import { isNil } from "lodash"
+import { includes, isNil, xor } from "lodash"
 
 import { Instance, t } from "mobx-state-tree"
 import { fetchPokemon, PokemonDatum } from "../api"
 import { IReactionDisposer } from "mobx"
 import { createContext, useContext } from "react"
-import { MatrixDatum } from "../utils/types"
+import { MatrixDatum, StackDatum } from "../utils/types"
 
 const lifeCycle =
   <T>(func: (self: T) => IReactionDisposer | void) =>
@@ -26,16 +26,29 @@ export const RootModel = t
     data: t.optional(t.frozen<PokemonDatum[]>(), []),
     hoveredDatumScatterPlot: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
     hoveredDatumMatrix: t.optional(t.frozen<MatrixDatum | undefined>(), undefined),
+    hoveredDatumStack: t.optional(t.frozen<StackDatum | undefined>(), undefined),
+    scatterFilters: t.optional(t.frozen<number[]>(), []),
     // selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
   })
   .views((self) => ({
     get columns() {
       return Object.keys(self.data?.[0] ?? {}) as (keyof PokemonDatum)[]
     },
+    get filteredScatterData() {
+      if (self.scatterFilters.length > 0)
+        return self.data.map((d) => (includes(self.scatterFilters, d.Generation) ? d : {}))
+      return self.data
+    },
   }))
   .actions((self) => ({
     setData(newData: PokemonDatum[]) {
       self.data = newData
+    },
+    toggleFilters(filter: number) {
+      const newFilters = xor(self.scatterFilters, [filter])
+
+      self.scatterFilters = newFilters
+      console.log(self.scatterFilters)
     },
     // getDomain(key: keyof PokemonDatum[]) {
     //   // extent(self.data.map((datum) => datum[key])) as [number, number]
@@ -47,6 +60,10 @@ export const RootModel = t
     setHoveredMatrix(datum: MatrixDatum | undefined) {
       console.log(datum)
       self.hoveredDatumMatrix = datum
+    },
+    setHoveredStack(datum: StackDatum | undefined) {
+      console.log(datum)
+      self.hoveredDatumStack = datum
     },
   }))
   .actions(

@@ -1,10 +1,12 @@
 .tooltip {
   position: absolute;
-  font-size: 20px;
+  font-size: 15px;
   color: black;
-  background-color: white;
+  background-color: #ffffff86;
+  backdrop-filter: blur(5px);
   border-radius: 10px;
   padding: 5px 10px;
+  /* border: solid 2px white; */
   /* transition: all 800ms ease-out; */
   opacity: 100;
 }

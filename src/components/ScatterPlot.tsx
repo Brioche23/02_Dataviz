@@ -2,14 +2,18 @@ import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { scaleLinear, scaleOrdinal, scaleSqrt } from "d3-scale"
 import { extent } from "d3-array"
-import { countBy, orderBy } from "lodash"
+import { countBy, includes, orderBy } from "lodash"
 import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { useControls } from "leva"
-import { TYPES } from "../const"
-import { Axes } from "./Axes"
+import { TYPES, REGIONS } from "../const"
 import { ChartProps } from "../utils/types"
 import { Tooltip } from "./Tooltip"
+import { XAxis } from "./XAxis"
+import { YAxis } from "./YAxis"
+
+import styles from "./ScatterPlot.module.css"
+import classNames from "classnames"
 
 export const ScatterPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
@@ -86,18 +90,29 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
   return (
     <section id="scatter-plot">
       <h1>ScatterPlot</h1>
+      <div className={styles.filter}>
+        {REGIONS.map((r, i) => {
+          return (
+            <p
+              key={i}
+              onClick={() => mst.toggleFilters(r.gen)}
+              className={classNames(
+                styles["filter-chip"],
+                includes(mst.scatterFilters, r.gen) ? styles.active : ""
+              )}
+            >
+              {r.region}
+            </p>
+          )
+        })}
+      </div>
       <div id="#scatter-plot">
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
-          <Axes
-            margins={layout.chart}
-            xTicks={xTicks}
-            yTicks={yTicks}
-            xLabel="Attack"
-            yLabel="Defense"
-          />
+          <XAxis margins={layout.chart} xTicks={xTicks} xLabel="Attack" />
+          <YAxis margins={layout.chart} yTicks={yTicks} yLabel="Defense" />
 
           {/* Circles */}
-          {mst.data.map((datum, index) => {
+          {mst.filteredScatterData.map((datum, index) => {
             // if (datum.Generation === 2)
             return (
               <g key={index}>
@@ -107,7 +122,7 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
                   cy={yScale(datum.Defense)}
                   r={radiusScale(datum.HP)}
                   fill={coloScale(datum["Type 1"])}
-                  opacity={15 * datum.Generation + "%"}
+                  // opacity={15 * datum.Generation + "%"}
                   onMouseOver={() => mst.setHoveredScatterPlot(datum)}
                   onMouseLeave={() => mst.setHoveredScatterPlot(undefined)}
                 />
@@ -120,6 +135,22 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
         {mst.hoveredDatumScatterPlot && (
           <Tooltip>
             <p>{mst.hoveredDatumScatterPlot?.Name}</p>
+            <table>
+              <thead>
+                <tr>
+                  <td>Atk</td>
+                  <td>Def</td>
+                  <td>HP</td>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{mst.hoveredDatumScatterPlot?.Attack}</td>
+                  <td>{mst.hoveredDatumScatterPlot?.Defense}</td>
+                  <td>{mst.hoveredDatumScatterPlot?.HP}</td>
+                </tr>
+              </tbody>
+            </table>
           </Tooltip>
         )}
       </div>
