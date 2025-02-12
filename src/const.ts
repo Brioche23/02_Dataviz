@@ -1,3 +1,5 @@
+import { RadarVariable } from "./utils/types"
+
 export const TYPES = [
   { name: "grass", color: "#8CC260" },
   { name: "fire", color: "#E38643" },
@@ -44,4 +46,13 @@ export const REGIONS = [
     gen: 6,
     region: "Kalos",
   },
+]
+
+export const RADAR_VARIABLES: RadarVariable[] = [
+  "HP",
+  "Attack",
+  "Defense",
+  "Sp. Atk",
+  "Sp. Def",
+  "Speed",
 ]

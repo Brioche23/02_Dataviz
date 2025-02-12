@@ -28,6 +28,7 @@ export const RootModel = t
     hoveredDatumMatrix: t.optional(t.frozen<MatrixDatum | undefined>(), undefined),
     hoveredDatumStack: t.optional(t.frozen<StackDatum | undefined>(), undefined),
     generationFilter: t.optional(t.frozen<number[]>(), []),
+    selectedPokemonIndex: t.optional(t.frozen<number>(), 1),
     // selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
   })
   .views((self) => ({
@@ -52,16 +53,19 @@ export const RootModel = t
     //   // extent(self.data.map((datum) => datum[key])) as [number, number]
     // },
     setHoveredScatterPlot(datum: PokemonDatum | undefined) {
-      console.log(datum)
+      // console.log(datum)
       self.hoveredDatumScatterPlot = datum
     },
     setHoveredMatrix(datum: MatrixDatum | undefined) {
-      console.log(datum)
+      // console.log(datum)
       self.hoveredDatumMatrix = datum
     },
     setHoveredStack(datum: StackDatum | undefined) {
-      console.log(datum)
+      // console.log(datum)
       self.hoveredDatumStack = datum
+    },
+    setSelectedPokemonIndex(n: number) {
+      self.selectedPokemonIndex = n
     },
   }))
   .actions(

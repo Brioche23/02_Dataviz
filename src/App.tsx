@@ -7,8 +7,8 @@ import { ScatterPlot } from "./components/ScatterPlot"
 import { MatrixPlot } from "./components/MatrixPlot"
 import { StackedBarChart } from "./components/StackedBarChart"
 import { useWindowSize } from "./hooks/useWindowSize"
-import { RadarChart } from "./components/RadarChart"
 import { RadarSeries } from "./components/RadarSeries"
+import { RadarSelector } from "./components/RadarSelector"
 
 const MAX_CHART_WIDTH = 1000
 const CHART_MARGINS = 50
@@ -27,7 +27,8 @@ const App = observer(() => {
 
       {mst.data?.length > 0 && (
         <section>
-          <RadarSeries width={chartWidth} />
+          <RadarSelector width={chartWidth} />
+          {/* <RadarSeries width={chartWidth} /> */}
           <StackedBarChart width={chartWidth} />
           <MatrixPlot width={chartWidth} />
           <ScatterPlot width={chartWidth} />

@@ -54,7 +54,7 @@ export const RadarGrid = ({ outerRadius, xScale, axisConfig }: RadarGridProps) =
         <text
           x={labelPosition.x}
           y={labelPosition.y}
-          fontSize={8}
+          fontSize={15}
           fill={GRID_COLOR}
           textAnchor={labelPosition.x > 0 ? "start" : "end"}
           dominantBaseline="middle"
