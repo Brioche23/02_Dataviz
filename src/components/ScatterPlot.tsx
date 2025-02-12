@@ -14,6 +14,7 @@ import { YAxis } from "./YAxis"
 
 import styles from "./ScatterPlot.module.css"
 import classNames from "classnames"
+import { RegionFilter } from "./RegionFilter"
 
 export const ScatterPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
@@ -90,22 +91,9 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
   return (
     <section className="scatter-plot">
       <h1>ScatterPlot</h1>
-      <div className={styles.filter}>
-        {REGIONS.map((r, i) => {
-          return (
-            <button
-              key={i}
-              onClick={() => mst.toggleFilters(r.gen)}
-              className={classNames(
-                styles["filter-chip"],
-                includes(mst.generationFilter, r.gen) ? styles.active : ""
-              )}
-            >
-              {r.region}
-            </button>
-          )
-        })}
-      </div>
+
+      <RegionFilter />
+
       <div className="#scatter-plot">
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
           <XAxis margins={layout.chart} xTicks={xTicks} xLabel="Attack" />

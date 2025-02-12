@@ -1,15 +1,15 @@
 import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { makeLayout } from "yogurt-layout"
-import { ChartProps, RadarVariable } from "../utils/types"
+import { ChartProps } from "../utils/types"
 import { useControls } from "leva"
-import { DebugLayout } from "./DebugLayout"
-import { RadarChart } from "./RadarChart"
+
 import { max } from "d3-array"
 import { RadarChartAnimated } from "./RadarChartAnimated"
 import { RADAR_VARIABLES } from "../const"
 import styles from "./RadarSelector.module.css"
 import classNames from "classnames"
+import { RegionFilter } from "./RegionFilter"
 
 export const RadarSelector = observer(({ width }: ChartProps) => {
   const { debug } = useControls({
@@ -38,32 +38,36 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
   }))
 
   return (
-    <section className={styles["selector-wrapper"]}>
-      <div className="pokemon-list" style={{ height: layout.root.height, overflow: "scroll" }}>
-        {mst.data.map((datum, i) => {
-          return (
-            <p
-              key={i}
-              className={classNames(
-                styles.label,
-                i === mst.selectedPokemonIndex ? styles.active : ""
-              )}
-              onClick={() => mst.setSelectedPokemonIndex(i)}
-            >
-              {datum.Name}
-            </p>
-          )
-        })}
+    <section>
+      <RegionFilter />
+
+      <div className={styles["selector-wrapper"]}>
+        <div className="pokemon-list" style={{ height: layout.root.height, overflow: "scroll" }}>
+          {mst.filteredScatterPlotData.map(
+            (datum, i) =>
+              datum?.Name && (
+                <p
+                  key={i}
+                  className={classNames(
+                    styles.label,
+                    i === mst.selectedPokemonIndex ? styles.active : ""
+                  )}
+                  onClick={() => mst.setSelectedPokemonIndex(i)}
+                >
+                  {datum?.Name}
+                </p>
+              )
+          )}
+        </div>
+        <div className="radar" style={{ width: layout.radarWrapper.width }}>
+          <RadarChartAnimated
+            data={mst.data[mst.selectedPokemonIndex]}
+            width={layout.radarWrapper.width}
+            height={layout.radarWrapper.height}
+            axisConfig={axisConfig}
+          />
+        </div>
       </div>
-      <div className="radar" style={{ width: layout.radarWrapper.width }}>
-        <RadarChartAnimated
-          data={mst.data[mst.selectedPokemonIndex]}
-          width={layout.radarWrapper.width}
-          height={layout.radarWrapper.height}
-          axisConfig={axisConfig}
-        />
-      </div>
-      {/* {debug && <DebugLayout layout={layout} />} */}
     </section>
   )
 })
