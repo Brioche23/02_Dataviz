@@ -104,7 +104,7 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
   return (
     <section>
       <h1>Stacked Bar Chart</h1>
-      <div id="#scatter-plot">
+      <div className="-scatter-plot">
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
           <XAxis margins={layout.chart} xTicks={xTicks} xLabel="Generation" />
           <YAxis margins={layout.chart} yTicks={yTicks} yLabel="Pokemons" />
@@ -142,7 +142,7 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
         {mst.hoveredDatumStack && (
           <Tooltip>
             <p>
-              <span className="title">{mst.hoveredDatumStack?.type}</span>
+              <span className="-title">{mst.hoveredDatumStack?.type}</span>
               <span>:</span>
               <span>{mst.hoveredDatumStack?.count}</span>
             </p>

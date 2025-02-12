@@ -14,7 +14,7 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
   const { debug } = useControls({
-    debug: false,
+    debug: true,
   })
 
   //   useEffect(() => {
@@ -72,7 +72,7 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   return (
-    <section id="matrix-plot">
+    <section className="matrix-plot">
       <h1>MatrixPlot</h1>
       <div>
         <p>{groupedTypesCombo.length}</p>

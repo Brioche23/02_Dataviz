@@ -2,7 +2,7 @@ import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { scaleLinear, scaleOrdinal, scaleSqrt } from "d3-scale"
 import { extent } from "d3-array"
-import { countBy, includes, orderBy } from "lodash"
+import { countBy, includes, isNil, orderBy } from "lodash"
 import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { useControls } from "leva"
@@ -19,7 +19,7 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
   const mst = useMst()
 
   const { debug, marginRight } = useControls({
-    debug: false,
+    debug: true,
     marginTop: { value: 10, min: 0, max: 100, step: 1 },
     marginRight: { value: 30, min: 0, max: 100, step: 1 },
     marginBottom: { value: 20, min: 0, max: 100, step: 1 },
@@ -88,46 +88,46 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
   //   console.log(yTicks);
 
   return (
-    <section id="scatter-plot">
+    <section className="scatter-plot">
       <h1>ScatterPlot</h1>
       <div className={styles.filter}>
         {REGIONS.map((r, i) => {
           return (
-            <p
+            <button
               key={i}
               onClick={() => mst.toggleFilters(r.gen)}
               className={classNames(
                 styles["filter-chip"],
-                includes(mst.scatterFilters, r.gen) ? styles.active : ""
+                includes(mst.generationFilter, r.gen) ? styles.active : ""
               )}
             >
               {r.region}
-            </p>
+            </button>
           )
         })}
       </div>
-      <div id="#scatter-plot">
+      <div className="#scatter-plot">
         <svg height={layout.root.height} width={layout.root.width} overflow={"visible"}>
           <XAxis margins={layout.chart} xTicks={xTicks} xLabel="Attack" />
           <YAxis margins={layout.chart} yTicks={yTicks} yLabel="Defense" />
 
           {/* Circles */}
-          {mst.filteredScatterData.map((datum, index) => {
-            // if (datum.Generation === 2)
-            return (
-              <g key={index}>
-                <circle
-                  key={index}
-                  cx={xScale(datum.Attack)}
-                  cy={yScale(datum.Defense)}
-                  r={radiusScale(datum.HP)}
-                  fill={coloScale(datum["Type 1"])}
-                  // opacity={15 * datum.Generation + "%"}
-                  onMouseOver={() => mst.setHoveredScatterPlot(datum)}
-                  onMouseLeave={() => mst.setHoveredScatterPlot(undefined)}
-                />
-              </g>
-            )
+          {mst.filteredScatterPlotData.map((datum, index) => {
+            if (!isNil(datum))
+              return (
+                <g key={index}>
+                  <circle
+                    key={index}
+                    cx={xScale(datum.Attack)}
+                    cy={yScale(datum.Defense)}
+                    r={radiusScale(datum.HP)}
+                    fill={coloScale(datum["Type 1"])}
+                    // opacity={15 * datum.Generation + "%"}
+                    onMouseOver={() => mst.setHoveredScatterPlot(datum)}
+                    onMouseLeave={() => mst.setHoveredScatterPlot(undefined)}
+                  />
+                </g>
+              )
           })}
           {debug && <DebugLayout layout={layout} />}
         </svg>

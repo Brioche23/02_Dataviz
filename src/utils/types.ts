@@ -19,3 +19,5 @@ export interface StackDatum {
 //   x: number
 //   y: number
 // }
+
+export type RadarVariable = "HP" | "Attack" | "Defense" | "Sp. Atk" | "Sp. Def" | "Speed"

@@ -27,16 +27,16 @@ export const RootModel = t
     hoveredDatumScatterPlot: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
     hoveredDatumMatrix: t.optional(t.frozen<MatrixDatum | undefined>(), undefined),
     hoveredDatumStack: t.optional(t.frozen<StackDatum | undefined>(), undefined),
-    scatterFilters: t.optional(t.frozen<number[]>(), []),
+    generationFilter: t.optional(t.frozen<number[]>(), []),
     // selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
   })
   .views((self) => ({
     get columns() {
       return Object.keys(self.data?.[0] ?? {}) as (keyof PokemonDatum)[]
     },
-    get filteredScatterData() {
-      if (self.scatterFilters.length > 0)
-        return self.data.map((d) => (includes(self.scatterFilters, d.Generation) ? d : {}))
+    get filteredScatterPlotData() {
+      if (self.generationFilter.length > 0)
+        return self.data.map((d) => (includes(self.generationFilter, d.Generation) ? d : undefined))
       return self.data
     },
   }))
@@ -45,10 +45,8 @@ export const RootModel = t
       self.data = newData
     },
     toggleFilters(filter: number) {
-      const newFilters = xor(self.scatterFilters, [filter])
-
-      self.scatterFilters = newFilters
-      console.log(self.scatterFilters)
+      const newFilters = xor(self.generationFilter, [filter])
+      self.generationFilter = newFilters
     },
     // getDomain(key: keyof PokemonDatum[]) {
     //   // extent(self.data.map((datum) => datum[key])) as [number, number]

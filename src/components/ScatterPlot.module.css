@@ -1,14 +1,17 @@
 .filter {
-  width: 500px;
+  /* width: 500px; */
+  place-content: center;
   display: flex;
   gap: 5px;
+  margin-bottom: 2rem;
 }
 
 .filter-chip {
   padding: 10px 20px;
-  border: 1px white solid;
+  border: 1px solid white;
   border-radius: 20px;
   &.active {
+    border-color: #646cff;
     background-color: #545454;
   }
 }
