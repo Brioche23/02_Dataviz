@@ -2,7 +2,6 @@ import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { makeLayout } from "yogurt-layout"
 import { ChartProps } from "../utils/types"
-import { useControls } from "leva"
 
 import { max } from "d3-array"
 import { RadarChartAnimated } from "./RadarChartAnimated"
@@ -10,12 +9,9 @@ import { RADAR_VARIABLES } from "../const"
 import styles from "./RadarSelector.module.css"
 import classNames from "classnames"
 import { RegionFilter } from "./RegionFilter"
+import { includes } from "lodash"
 
 export const RadarSelector = observer(({ width }: ChartProps) => {
-  const { debug } = useControls({
-    debug: true,
-    // marginRight: { value: 30, min: 0, max: 100, step: 1 },
-  })
   const mst = useMst()
 
   const layout = makeLayout({
@@ -39,29 +35,33 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
 
   return (
     <section>
+      <h1>Radar Selection</h1>
       <RegionFilter />
 
+      <div className={styles["selected-pokemons"]}>
+        {mst.selectedPokemonIndex.map((i) => {
+          return <PokemonSelectionLabel key={i} name={mst.data[i].Name} i={i} />
+        })}
+      </div>
       <div className={styles["selector-wrapper"]}>
-        <div className="pokemon-list" style={{ height: layout.root.height, overflow: "scroll" }}>
-          {mst.filteredScatterPlotData.map(
-            (datum, i) =>
-              datum?.Name && (
-                <p
-                  key={i}
-                  className={classNames(
-                    styles.label,
-                    i === mst.selectedPokemonIndex ? styles.active : ""
-                  )}
-                  onClick={() => mst.setSelectedPokemonIndex(i)}
-                >
-                  {datum?.Name}
-                </p>
-              )
-          )}
+        <div className="pokemon-list" style={{}}>
+          <div className={styles["label-wrapper"]}>
+            <input
+              type="text"
+              name="pokemon"
+              placeholder="Name or type of Pokemon"
+              className={styles["search-bar"]}
+              onChange={(e) => mst.setSearchValue(e.target.value)}
+            />
+          </div>
+          <div style={{ height: layout.root.height, overflow: "scroll" }}>
+            {mst.searchedData.map(
+              (datum, i) => datum?.Name && <PokemonSelectionLabel key={i} name={datum.Name} i={i} />
+            )}
+          </div>
         </div>
         <div className="radar" style={{ width: layout.radarWrapper.width }}>
           <RadarChartAnimated
-            data={mst.data[mst.selectedPokemonIndex]}
             width={layout.radarWrapper.width}
             height={layout.radarWrapper.height}
             axisConfig={axisConfig}
@@ -71,3 +71,42 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
     </section>
   )
 })
+
+interface LabelProps {
+  name: string
+  i: number
+}
+
+const PokemonSelectionLabel = ({ name, i }: LabelProps) => {
+  const mst = useMst()
+  return (
+    <div
+      className={classNames(
+        styles["label-wrapper"],
+        includes(mst.selectedPokemonIndex, i) ? styles.active : ""
+      )}
+    >
+      <div
+        key={i}
+        className={classNames(
+          styles.label,
+          includes(mst.selectedPokemonIndex, i) ? styles.active : ""
+        )}
+        onClick={() => {
+          mst.setSelectedPokemonIndex(i)
+        }}
+      >
+        <p>{name}</p>
+      </div>
+      <button
+        onClick={() => {
+          if (mst.selectedPokemonIndex.length === 1) {
+            if (!includes(mst.selectedPokemonIndex, i)) mst.toggleSelectedPokemonIndex(i)
+          } else mst.toggleSelectedPokemonIndex(i)
+        }}
+      >
+        {includes(mst.selectedPokemonIndex, i) ? "-" : "+"}
+      </button>
+    </div>
+  )
+}

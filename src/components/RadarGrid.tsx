@@ -47,22 +47,22 @@ export const RadarGrid = ({ outerRadius, xScale, axisConfig }: RadarGridProps) =
     ])
 
     const labelPosition = polarToCartesian(angle - Math.PI / 2, outerRadius + 10)
-
-    return (
-      <g key={i}>
-        <path d={path} stroke={GRID_COLOR} strokeWidth={0.5} rx={1} />
-        <text
-          x={labelPosition.x}
-          y={labelPosition.y}
-          fontSize={15}
-          fill={GRID_COLOR}
-          textAnchor={labelPosition.x > 0 ? "start" : "end"}
-          dominantBaseline="middle"
-        >
-          {axis.name}
-        </text>
-      </g>
-    )
+    if (!isNil(path))
+      return (
+        <g key={i}>
+          <path d={path} stroke={GRID_COLOR} strokeWidth={0.5} rx={1} />
+          <text
+            x={labelPosition.x}
+            y={labelPosition.y}
+            fontSize={15}
+            fill={GRID_COLOR}
+            textAnchor={labelPosition.x > 0 ? "start" : "end"}
+            dominantBaseline="middle"
+          >
+            {axis.name}
+          </text>
+        </g>
+      )
   })
 
   // Compte grid = concentric circles

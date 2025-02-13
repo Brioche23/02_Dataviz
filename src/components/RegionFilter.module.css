@@ -3,15 +3,18 @@
   place-content: center;
   display: flex;
   gap: 5px;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .filter-chip {
   padding: 10px 20px;
   border: 1px solid white;
   border-radius: 20px;
+  &:hover {
+    border-color: #646cff;
+  }
   &.active {
     border-color: #646cff;
-    background-color: #545454;
+    /* background-color: #545454; */
   }
 }

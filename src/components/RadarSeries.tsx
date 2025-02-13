@@ -61,7 +61,7 @@ export const RadarSeries = observer(({ width }: ChartProps) => {
           return (
             <button
               key={i}
-              onClick={() => mst.toggleFilters(r.gen)}
+              onClick={() => mst.toggleRegionFilters(r.gen)}
               className={classNames(
                 styles["filter-chip"],
                 includes(mst.generationFilter, r.gen) ? styles.active : ""

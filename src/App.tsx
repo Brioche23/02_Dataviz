@@ -7,7 +7,7 @@ import { ScatterPlot } from "./components/ScatterPlot"
 import { MatrixPlot } from "./components/MatrixPlot"
 import { StackedBarChart } from "./components/StackedBarChart"
 import { useWindowSize } from "./hooks/useWindowSize"
-import { RadarSeries } from "./components/RadarSeries"
+// import { RadarSeries } from "./components/RadarSeries"
 import { RadarSelector } from "./components/RadarSelector"
 
 const MAX_CHART_WIDTH = 1000

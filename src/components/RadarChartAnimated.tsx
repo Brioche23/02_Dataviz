@@ -7,11 +7,11 @@ import { useControls } from "leva"
 
 import { RadarVariable } from "../utils/types"
 import { lineRadial } from "d3"
-import { PokemonDatum } from "../api"
 import { RadarGrid } from "./RadarGrid"
 import { RADAR_VARIABLES, TYPES } from "../const"
 
 import styles from "./RadarChartAnimated.module.css"
+import { useMst } from "../state"
 
 type AxisConfig = {
   name: RadarVariable
@@ -19,16 +19,15 @@ type AxisConfig = {
 }
 
 type RadarProps = {
-  data: PokemonDatum
+  // data: PokemonDatum
   axisConfig: AxisConfig[]
   width: number
   height: number
 }
 
-export const RadarChartAnimated = observer(({ data, width, height, axisConfig }: RadarProps) => {
-  //   const mst = useMst()
+export const RadarChartAnimated = observer(({ width, height, axisConfig }: RadarProps) => {
+  const mst = useMst()
 
-  // const { ref, height, width } = useComponentSize()
   const { debug } = useControls({
     debug: true,
   })
@@ -36,7 +35,7 @@ export const RadarChartAnimated = observer(({ data, width, height, axisConfig }:
   console.log("height", height)
   console.log("width", width)
 
-  const { root, chart, label } = makeLayout({
+  const { root, chart } = makeLayout({
     id: "root",
     width: width,
     height: height,
@@ -45,13 +44,6 @@ export const RadarChartAnimated = observer(({ data, width, height, axisConfig }:
     },
     direction: "column",
     children: [
-      {
-        id: "label",
-        height: 20,
-        padding: {
-          left: 20,
-        },
-      },
       {
         id: "chart",
       },
@@ -80,36 +72,25 @@ export const RadarChartAnimated = observer(({ data, width, height, axisConfig }:
   const lineGenerator = lineRadial()
   const rad = Math.min(chart.height, chart.width) / 2
 
-  const allCoordinates = axisConfig.map((axis) => {
-    const yScale = yScales[axis.name]
-    const angle = xScale(axis.name) ?? 0 // I don't understand the type of scalePoint. IMO x cannot be undefined since I'm passing it something of type Variable.
-    const radius = yScale(data[axis.name]) * rad
-    const coordinate: [number, number] = [angle, radius]
-    return coordinate
-  })
-
-  allCoordinates.push(allCoordinates[0])
-  const linePath = lineGenerator(allCoordinates)
+  const allCoordinates = mst.filteredRadarPlotData.map((data) =>
+    axisConfig.map((axis) => {
+      const yScale = yScales[axis.name]
+      const angle = xScale(axis.name) ?? 0 // I don't understand the type of scalePoint. IMO x cannot be undefined since I'm passing it something of type Variable.
+      const radius = !isNil(data) ? yScale(data[axis.name]) * rad : 0
+      const coordinate: [number, number] = [angle, radius]
+      return coordinate
+    })
+  )
+  console.log("daCo", allCoordinates)
+  allCoordinates.map((c) => c.push(c[0]))
+  const linePaths = allCoordinates.map((c) => lineGenerator(c))
 
   return (
-    <section className="radar">
+    <section style={{ position: "absolute" }}>
       <div
         className="radar-chart"
         style={{ position: "relative", outline: "0px solid purple", height: height }}
       >
-        <div
-          style={{
-            position: "absolute",
-            fontSize: 10,
-            top: label.top,
-            left: label.left,
-          }}
-        >
-          <p>
-            {data["#"]}–{data.Name}
-          </p>
-        </div>
-
         <svg height={root.height} width={root.width} overflow={"visible"}>
           <g
             transform={`translate(${chart.left + chart.width / 2}, ${
@@ -118,18 +99,22 @@ export const RadarChartAnimated = observer(({ data, width, height, axisConfig }:
           >
             <RadarGrid outerRadius={rad} xScale={xScale} axisConfig={axisConfig} />
 
-            {!isNil(linePath) && (
-              <path
-                className={styles["animated-path"]}
-                d={linePath}
-                // stroke={"#cb1dd1"}
-                strokeWidth={3}
-                fill={colorScale(data["Type 1"].toLowerCase())}
-                fillOpacity={0.7}
-              />
+            {linePaths.map(
+              (path, i) =>
+                !isNil(path) && (
+                  <path
+                    key={i}
+                    className={styles["animated-path"]}
+                    d={path}
+                    stroke={colorScale(mst.filteredRadarPlotData[i]?.["Type 1"].toLowerCase())}
+                    strokeWidth={3}
+                    fill={colorScale(mst.filteredRadarPlotData[i]?.["Type 1"].toLowerCase())}
+                    fillOpacity={0.5}
+                  />
+                )
             )}
           </g>
-          {debug && <DebugLayout layout={{ root, chart, label }} />}
+          {debug && <DebugLayout layout={{ root, chart }} />}
         </svg>
       </div>
     </section>

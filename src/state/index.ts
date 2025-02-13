@@ -28,7 +28,8 @@ export const RootModel = t
     hoveredDatumMatrix: t.optional(t.frozen<MatrixDatum | undefined>(), undefined),
     hoveredDatumStack: t.optional(t.frozen<StackDatum | undefined>(), undefined),
     generationFilter: t.optional(t.frozen<number[]>(), []),
-    selectedPokemonIndex: t.optional(t.frozen<number>(), 1),
+    selectedPokemonIndex: t.optional(t.frozen<number[]>(), [0]),
+    searchValue: t.optional(t.frozen<string>(), ""),
     // selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
   })
   .views((self) => ({
@@ -40,12 +41,26 @@ export const RootModel = t
         return self.data.map((d) => (includes(self.generationFilter, d.Generation) ? d : undefined))
       return self.data
     },
+    get filteredRadarPlotData() {
+      if (self.selectedPokemonIndex.length > 0)
+        return self.data.map((d, i) => (includes(self.selectedPokemonIndex, i) ? d : undefined))
+      return self.data
+    },
+    get searchedData() {
+      if (self.searchValue.length > 0)
+        return self.data.filter(
+          (d) =>
+            includes(d.Name.toLowerCase(), self.searchValue.toLowerCase()) ||
+            includes(d["Type 1"].toLowerCase(), self.searchValue.toLowerCase())
+        )
+      return self.data
+    },
   }))
   .actions((self) => ({
     setData(newData: PokemonDatum[]) {
       self.data = newData
     },
-    toggleFilters(filter: number) {
+    toggleRegionFilters(filter: number) {
       const newFilters = xor(self.generationFilter, [filter])
       self.generationFilter = newFilters
     },
@@ -53,19 +68,24 @@ export const RootModel = t
     //   // extent(self.data.map((datum) => datum[key])) as [number, number]
     // },
     setHoveredScatterPlot(datum: PokemonDatum | undefined) {
-      // console.log(datum)
       self.hoveredDatumScatterPlot = datum
     },
     setHoveredMatrix(datum: MatrixDatum | undefined) {
-      // console.log(datum)
       self.hoveredDatumMatrix = datum
     },
     setHoveredStack(datum: StackDatum | undefined) {
-      // console.log(datum)
       self.hoveredDatumStack = datum
     },
+    setSearchValue(inputValue: string) {
+      console.log(self.searchValue)
+      self.searchValue = inputValue
+    },
+    toggleSelectedPokemonIndex(n: number) {
+      const newFilters = xor(self.selectedPokemonIndex, [n])
+      self.selectedPokemonIndex = newFilters
+    },
     setSelectedPokemonIndex(n: number) {
-      self.selectedPokemonIndex = n
+      self.selectedPokemonIndex = [n]
     },
   }))
   .actions(
