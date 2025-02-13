@@ -27,8 +27,6 @@ export type RadarProps = {
 }
 
 export const RadarChart = observer(({ data, axisConfig, scales }: RadarProps) => {
-  //   const mst = useMst()
-
   const { ref, height, width } = useComponentSize()
   const { debug } = useControls({
     debug: true,

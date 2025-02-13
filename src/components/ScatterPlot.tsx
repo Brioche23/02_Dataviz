@@ -2,18 +2,16 @@ import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { scaleLinear, scaleOrdinal, scaleSqrt } from "d3-scale"
 import { extent } from "d3-array"
-import { countBy, includes, isNil, orderBy } from "lodash"
+import { countBy, isNil, orderBy } from "lodash"
 import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { useControls } from "leva"
-import { TYPES, REGIONS } from "../const"
+import { TYPES } from "../const"
 import { ChartProps } from "../utils/types"
 import { Tooltip } from "./Tooltip"
 import { XAxis } from "./XAxis"
 import { YAxis } from "./YAxis"
 
-import styles from "./ScatterPlot.module.css"
-import classNames from "classnames"
 import { RegionFilter } from "./RegionFilter"
 
 export const ScatterPlot = observer(({ width }: ChartProps) => {
@@ -46,8 +44,6 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
       },
     ],
   })
-
-  // console.log("Yogurt", layout);
 
   const attackValuesDomain = extent(mst.data.map((datum) => datum.Attack).concat([0])) as [
     number,
@@ -85,8 +81,6 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
     value,
     offset: yScale(value),
   }))
-
-  //   console.log(yTicks);
 
   return (
     <section className="scatter-plot">

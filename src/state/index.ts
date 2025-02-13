@@ -1,5 +1,4 @@
 import { includes, isNil, xor } from "lodash"
-
 import { Instance, t } from "mobx-state-tree"
 import { fetchPokemon, PokemonDatum } from "../api"
 import { IReactionDisposer } from "mobx"
@@ -29,21 +28,19 @@ export const RootModel = t
     hoveredDatumStack: t.optional(t.frozen<StackDatum | undefined>(), undefined),
     generationFilter: t.optional(t.frozen<number[]>(), []),
     selectedPokemonIds: t.optional(t.frozen<number[]>(), [0]),
-    searchValue: t.optional(t.frozen<string>(), ""),
+    searchValue: t.optional(t.string, ""),
   })
   .views((self) => ({
     get columns() {
       return Object.keys(self.data?.[0] ?? {}) as (keyof PokemonDatum)[]
     },
     get filteredByGenerationData() {
-      if (self.generationFilter.length > 0)
-        return self.data.map((d) => (includes(self.generationFilter, d.Generation) ? d : undefined))
-      return self.data
+      if (self.generationFilter.length === 0) return self.data
+      return self.data.filter((d) => includes(self.generationFilter, d.Generation))
     },
     get filteredRadarPlotData() {
-      if (self.selectedPokemonIds.length > 0)
-        return self.data.map((d, i) => (includes(self.selectedPokemonIds, d.id) ? d : undefined))
-      return self.data
+      if (self.selectedPokemonIds.length === 0) return self.data
+      return self.data.filter((d) => includes(self.selectedPokemonIds, d.id))
     },
   }))
   .views((self) => ({

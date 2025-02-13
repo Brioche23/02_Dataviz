@@ -42,7 +42,7 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
       <h1>Radar Selection</h1>
       <RegionFilter />
 
-      <div className={styles["selected-pokemons"]}>
+      <div className={styles["selected-pokemons"]} style={{ width: layout.root.width }}>
         {mst.selectedPokemonIds.map((i) => {
           return <PokemonSelectionLabel key={i} pokemon={mst.data[i]} />
         })}

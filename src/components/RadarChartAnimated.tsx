@@ -4,9 +4,8 @@ import { isNil, keyBy, mapValues } from "lodash"
 import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { useControls } from "leva"
-
 import { RadarVariable } from "../utils/types"
-import { lineRadial } from "d3"
+import { curveCardinalClosed, curveLinearClosed, lineRadial } from "d3"
 import { RadarGrid } from "./RadarGrid"
 import { RADAR_VARIABLES, TYPES } from "../const"
 
@@ -69,7 +68,7 @@ export const RadarChartAnimated = observer(({ width, height, axisConfig }: Radar
 
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
-  const lineGenerator = lineRadial()
+  const lineGenerator = lineRadial().curve(curveCardinalClosed.tension(1))
   const rad = Math.min(chart.height, chart.width) / 2
 
   const allCoordinates = mst.filteredRadarPlotData.map((data) =>
@@ -78,11 +77,13 @@ export const RadarChartAnimated = observer(({ width, height, axisConfig }: Radar
       const angle = xScale(axis.name) ?? 0 // I don't understand the type of scalePoint. IMO x cannot be undefined since I'm passing it something of type Variable.
       const radius = !isNil(data) ? yScale(data[axis.name]) * rad : 0
       const coordinate: [number, number] = [angle, radius]
+      const color = !isNil(data) && colorScale(data?.["Type 1"])
       return coordinate
     })
   )
-  console.log("daCo", allCoordinates)
-  allCoordinates.map((c) => c.push(c[0]))
+
+  console.log("filtered Data", mst.filteredRadarPlotData)
+  //allCoordinates.map((c) => c.push(c[0]))
   const linePaths = allCoordinates.map((c) => lineGenerator(c))
 
   return (
@@ -102,14 +103,15 @@ export const RadarChartAnimated = observer(({ width, height, axisConfig }: Radar
             {linePaths.map(
               (path, i) =>
                 !isNil(path) && (
+                  // !isNil(mst.filteredRadarPlotData[i]) &&
                   <path
                     key={i}
                     className={styles["animated-path"]}
                     d={path}
                     stroke={colorScale(mst.filteredRadarPlotData[i]?.["Type 1"].toLowerCase())}
-                    strokeWidth={3}
+                    strokeWidth={2}
                     fill={colorScale(mst.filteredRadarPlotData[i]?.["Type 1"].toLowerCase())}
-                    fillOpacity={0.5}
+                    fillOpacity={0.2}
                   />
                 )
             )}

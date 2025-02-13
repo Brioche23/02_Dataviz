@@ -17,23 +17,6 @@ export const MatrixPlot = observer(({ width }: ChartProps) => {
     debug: true,
   })
 
-  //   useEffect(() => {
-  //     function getPageSize() {
-  //       console.log("w", window.innerWidth, "h", window.innerHeight)
-
-  //       setPageSize({
-  //         width: window.innerWidth,
-  //         height: window.innerHeight,
-  //       })
-  //     }
-  //     // Se dichiaro callback con ()=> ne crea una nuova, ergo non la posso usare nel remove
-  //     // Valore contenuto !== al riferimento in memoria
-  //     window.addEventListener("resize", getPageSize) //se non rimuovo, si incrementano
-
-  //     return () => window.removeEventListener("resize", getPageSize)
-  //     // console.log("w", getPageSize().width, "h", getPageSize().height)
-  //   }, [setPageSize])
-
   const layout = makeLayout({
     id: "root",
     width: width,

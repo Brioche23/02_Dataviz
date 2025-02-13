@@ -18,7 +18,6 @@ interface AxesProps {
 }
 
 export const Axes = observer(({ margins, xTicks, yTicks, xLabel, yLabel }: AxesProps) => {
-  //   const mst = useMst()
   return (
     <g className="-axes">
       {/* X-Axis */}

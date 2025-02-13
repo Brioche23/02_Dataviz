@@ -43,8 +43,6 @@ export const RadarSeries = observer(({ width }: ChartProps) => {
   const orderedTypesColors = TYPES.map((t) => t.color)
   const uniqueTypes = TYPES.map((t) => t.name)
 
-  //   console.log(orderedTypesColors)
-
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
   const scales = {
