@@ -28,32 +28,33 @@ export const RootModel = t
     hoveredDatumMatrix: t.optional(t.frozen<MatrixDatum | undefined>(), undefined),
     hoveredDatumStack: t.optional(t.frozen<StackDatum | undefined>(), undefined),
     generationFilter: t.optional(t.frozen<number[]>(), []),
-    selectedPokemonIndex: t.optional(t.frozen<number[]>(), [0]),
+    selectedPokemonIds: t.optional(t.frozen<number[]>(), [0]),
     searchValue: t.optional(t.frozen<string>(), ""),
-    // selectedDatum: t.optional(t.frozen<PokemonDatum | undefined>(), undefined),
   })
   .views((self) => ({
     get columns() {
       return Object.keys(self.data?.[0] ?? {}) as (keyof PokemonDatum)[]
     },
-    get filteredScatterPlotData() {
+    get filteredByGenerationData() {
       if (self.generationFilter.length > 0)
         return self.data.map((d) => (includes(self.generationFilter, d.Generation) ? d : undefined))
       return self.data
     },
     get filteredRadarPlotData() {
-      if (self.selectedPokemonIndex.length > 0)
-        return self.data.map((d, i) => (includes(self.selectedPokemonIndex, i) ? d : undefined))
+      if (self.selectedPokemonIds.length > 0)
+        return self.data.map((d, i) => (includes(self.selectedPokemonIds, d.id) ? d : undefined))
       return self.data
     },
+  }))
+  .views((self) => ({
     get searchedData() {
       if (self.searchValue.length > 0)
-        return self.data.filter(
+        return self.filteredByGenerationData.filter(
           (d) =>
-            includes(d.Name.toLowerCase(), self.searchValue.toLowerCase()) ||
-            includes(d["Type 1"].toLowerCase(), self.searchValue.toLowerCase())
+            includes(d?.Name.toLowerCase(), self.searchValue.toLowerCase()) ||
+            includes(d?.["Type 1"].toLowerCase(), self.searchValue.toLowerCase())
         )
-      return self.data
+      return self.filteredByGenerationData
     },
   }))
   .actions((self) => ({
@@ -64,9 +65,6 @@ export const RootModel = t
       const newFilters = xor(self.generationFilter, [filter])
       self.generationFilter = newFilters
     },
-    // getDomain(key: keyof PokemonDatum[]) {
-    //   // extent(self.data.map((datum) => datum[key])) as [number, number]
-    // },
     setHoveredScatterPlot(datum: PokemonDatum | undefined) {
       self.hoveredDatumScatterPlot = datum
     },
@@ -80,18 +78,17 @@ export const RootModel = t
       console.log(self.searchValue)
       self.searchValue = inputValue
     },
-    toggleSelectedPokemonIndex(n: number) {
-      const newFilters = xor(self.selectedPokemonIndex, [n])
-      self.selectedPokemonIndex = newFilters
+    toggleSelectedPokemonId(n: number) {
+      const newFilters = xor(self.selectedPokemonIds, [n])
+      self.selectedPokemonIds = newFilters
     },
-    setSelectedPokemonIndex(n: number) {
-      self.selectedPokemonIndex = [n]
+    setSelectedPokemonId(n: number) {
+      self.selectedPokemonIds = [n]
     },
   }))
   .actions(
     lifeCycle((self) => {
       fetchPokemon().then((data) => {
-        // console.log(data);
         self.setData(data)
       })
     })

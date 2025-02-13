@@ -17,6 +17,7 @@ interface RawPokemonDatum {
 }
 
 export interface PokemonDatum {
+  id: number
   "#": string
   Name: string
   "Type 1": string
@@ -33,8 +34,9 @@ export interface PokemonDatum {
 }
 
 function formatPokemonData(data: RawPokemonDatum[]): PokemonDatum[] {
-  const formattedData = data.map((datum) => ({
+  const formattedData = data.map((datum, i) => ({
     ...datum,
+    id: i,
     "#": datum["#"].toString(),
     Legendary: datum.Legendary === "True",
   }))

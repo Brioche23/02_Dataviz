@@ -2,14 +2,18 @@ import { observer } from "mobx-react-lite"
 import { useMst } from "../state"
 import { makeLayout } from "yogurt-layout"
 import { ChartProps } from "../utils/types"
-
 import { max } from "d3-array"
 import { RadarChartAnimated } from "./RadarChartAnimated"
 import { RADAR_VARIABLES } from "../const"
 import styles from "./RadarSelector.module.css"
 import classNames from "classnames"
 import { RegionFilter } from "./RegionFilter"
-import { includes } from "lodash"
+import { includes, isNil } from "lodash"
+import { PokemonDatum } from "../api"
+
+interface LabelProps {
+  pokemon: PokemonDatum | undefined
+}
 
 export const RadarSelector = observer(({ width }: ChartProps) => {
   const mst = useMst()
@@ -39,12 +43,15 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
       <RegionFilter />
 
       <div className={styles["selected-pokemons"]}>
-        {mst.selectedPokemonIndex.map((i) => {
-          return <PokemonSelectionLabel key={i} name={mst.data[i].Name} i={i} />
+        {mst.selectedPokemonIds.map((i) => {
+          return <PokemonSelectionLabel key={i} pokemon={mst.data[i]} />
         })}
       </div>
       <div className={styles["selector-wrapper"]}>
-        <div className="pokemon-list" style={{}}>
+        <div
+          className={styles["pokemon-list-wrapper"]}
+          style={{ width: layout.pokemonList.width, height: layout.root.height }}
+        >
           <div className={styles["label-wrapper"]}>
             <input
               type="text"
@@ -54,9 +61,9 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
               onChange={(e) => mst.setSearchValue(e.target.value)}
             />
           </div>
-          <div style={{ height: layout.root.height, overflow: "scroll" }}>
+          <div className={styles["pokemon-list"]} style={{ overflow: "scroll" }}>
             {mst.searchedData.map(
-              (datum, i) => datum?.Name && <PokemonSelectionLabel key={i} name={datum.Name} i={i} />
+              (datum, i) => datum?.Name && <PokemonSelectionLabel key={i} pokemon={datum} />
             )}
           </div>
         </div>
@@ -72,41 +79,46 @@ export const RadarSelector = observer(({ width }: ChartProps) => {
   )
 })
 
-interface LabelProps {
-  name: string
-  i: number
-}
-
-const PokemonSelectionLabel = ({ name, i }: LabelProps) => {
+const PokemonSelectionLabel = ({ pokemon }: LabelProps) => {
   const mst = useMst()
-  return (
-    <div
-      className={classNames(
-        styles["label-wrapper"],
-        includes(mst.selectedPokemonIndex, i) ? styles.active : ""
-      )}
-    >
+  if (!isNil(pokemon?.id))
+    return (
       <div
-        key={i}
         className={classNames(
-          styles.label,
-          includes(mst.selectedPokemonIndex, i) ? styles.active : ""
+          styles["label-wrapper"],
+          includes(mst.selectedPokemonIds, pokemon.id) ? styles.active : ""
         )}
-        onClick={() => {
-          mst.setSelectedPokemonIndex(i)
-        }}
       >
-        <p>{name}</p>
+        <div
+          key={pokemon.id}
+          className={classNames(
+            styles.label,
+            includes(mst.selectedPokemonIds, pokemon.id) ? styles.active : ""
+          )}
+          onClick={() => {
+            mst.setSelectedPokemonId(pokemon.id)
+          }}
+        >
+          <p>
+            {pokemon.Name} <span>{pokemon.Legendary && "⭐️"}</span>
+          </p>
+        </div>
+        <button
+          className={classNames(
+            styles["compare-button"],
+            mst.selectedPokemonIds.length === 1 && includes(mst.selectedPokemonIds, pokemon.id)
+              ? styles.disabled
+              : ""
+          )}
+          onClick={() => {
+            if (mst.selectedPokemonIds.length === 1) {
+              if (!includes(mst.selectedPokemonIds, pokemon.id))
+                mst.toggleSelectedPokemonId(pokemon.id)
+            } else mst.toggleSelectedPokemonId(pokemon.id)
+          }}
+        >
+          {includes(mst.selectedPokemonIds, pokemon.id) ? "-" : "+"}
+        </button>
       </div>
-      <button
-        onClick={() => {
-          if (mst.selectedPokemonIndex.length === 1) {
-            if (!includes(mst.selectedPokemonIndex, i)) mst.toggleSelectedPokemonIndex(i)
-          } else mst.toggleSelectedPokemonIndex(i)
-        }}
-      >
-        {includes(mst.selectedPokemonIndex, i) ? "-" : "+"}
-      </button>
-    </div>
-  )
+    )
 }

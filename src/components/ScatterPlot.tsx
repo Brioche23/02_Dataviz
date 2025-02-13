@@ -100,7 +100,7 @@ export const ScatterPlot = observer(({ width }: ChartProps) => {
           <YAxis margins={layout.chart} yTicks={yTicks} yLabel="Defense" />
 
           {/* Circles */}
-          {mst.filteredScatterPlotData.map((datum, index) => {
+          {mst.filteredByGenerationData.map((datum, index) => {
             if (!isNil(datum))
               return (
                 <g key={index}>

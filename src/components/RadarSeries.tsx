@@ -73,7 +73,7 @@ export const RadarSeries = observer(({ width }: ChartProps) => {
         })}
       </div>
       <div className={styles["radar-grid"]} style={{ width: width }}>
-        {mst.filteredScatterPlotData.map((datum, i) => {
+        {mst.filteredByGenerationData.map((datum, i) => {
           if (!isNil(datum))
             return (
               <RadarChart
