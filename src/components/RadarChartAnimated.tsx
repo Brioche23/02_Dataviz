@@ -5,7 +5,7 @@ import { makeLayout } from "yogurt-layout"
 import { DebugLayout } from "./DebugLayout"
 import { useControls } from "leva"
 import { RadarVariable } from "../utils/types"
-import { curveCardinalClosed, curveLinearClosed, lineRadial } from "d3"
+import { curveCardinalClosed, lineRadial } from "d3"
 import { RadarGrid } from "./RadarGrid"
 import { RADAR_VARIABLES, TYPES } from "../const"
 
@@ -77,7 +77,6 @@ export const RadarChartAnimated = observer(({ width, height, axisConfig }: Radar
       const angle = xScale(axis.name) ?? 0 // I don't understand the type of scalePoint. IMO x cannot be undefined since I'm passing it something of type Variable.
       const radius = !isNil(data) ? yScale(data[axis.name]) * rad : 0
       const coordinate: [number, number] = [angle, radius]
-      const color = !isNil(data) && colorScale(data?.["Type 1"])
       return coordinate
     })
   )
