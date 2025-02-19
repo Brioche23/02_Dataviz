@@ -91,10 +91,23 @@ export const StackedBarChart = observer(({ width }: ChartProps) => {
 
   const colorScale = scaleOrdinal(uniqueTypes, orderedTypesColors)
 
-  const xTicks = generationGroups.map((value) => ({
-    value,
-    offset: xScale(value) + xScale.bandwidth() / 2,
-  }))
+  const xTicks = generationGroups.map((value) => {
+    const scaledValue = xScale(value)
+
+    // Provide a fallback if scaledValue is undefined
+    if (scaledValue === undefined) {
+      console.warn(`xScale returned undefined for value: ${value}`)
+      return {
+        value,
+        offset: 0, // or some default value
+      }
+    }
+
+    return {
+      value,
+      offset: scaledValue + xScale.bandwidth() / 2,
+    }
+  })
 
   const yTicks = yScale.ticks().map((value) => ({
     value,
